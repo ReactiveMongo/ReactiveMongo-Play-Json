@@ -3,8 +3,8 @@ import sbt._
 
 object Testing {
   def settings = Seq(
-    fork in Test := false,
-    testOptions in Test += Tests.Cleanup(cl => {
+    Test / fork := false,
+    Test / testOptions += Tests.Cleanup(cl => {
       import scala.language.reflectiveCalls
       val c = cl.loadClass("Common$")
       type M = { def close(): Unit }

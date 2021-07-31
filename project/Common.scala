@@ -29,7 +29,7 @@ object Common extends AutoPlugin {
   override def projectSettings = Compiler.settings ++ Seq(
     useShaded := sys.env.get("REACTIVEMONGO_SHADED").fold(true)(_.toBoolean),
     driverVersion := {
-      val v = (version in ThisBuild).value
+      val v = (ThisBuild / version).value
       val suffix = {
         if (useShaded.value) "" // default ~> no suffix
         else "-noshaded"
@@ -71,11 +71,11 @@ object Common extends AutoPlugin {
       else if (v startsWith "2.9") Seq("play-2.6+", "play-2.7+", "play-2.9+")
       else Seq("play-2.6+", "play-2.7+", "play-2.9-")
     },
-    unmanagedSourceDirectories in Compile ++= playDirs.value.map { dir =>
-      (sourceDirectory in Compile).value / dir
+    Compile / unmanagedSourceDirectories ++= playDirs.value.map { dir =>
+      (Compile / sourceDirectory).value / dir
     },
-    unmanagedSourceDirectories in Test ++= playDirs.value.map { dir =>
-      (sourceDirectory in Test).value / dir
+    Test / unmanagedSourceDirectories ++= playDirs.value.map { dir =>
+      (Test / sourceDirectory).value / dir
     },
     libraryDependencies ++= Seq(
       "org.specs2" %% "specs2-core" % "4.10.6",

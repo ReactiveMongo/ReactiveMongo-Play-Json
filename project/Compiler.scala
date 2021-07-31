@@ -8,17 +8,17 @@ object Compiler {
   lazy val settings = Seq(
     scalaVersion := "2.12.14",
     crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.6"),
-    crossVersion in ThisBuild := CrossVersion.binary,
-    unmanagedSourceDirectories in Compile += {
-      val base = (sourceDirectory in Compile).value
+    ThisBuild / crossVersion := CrossVersion.binary,
+    Compile / unmanagedSourceDirectories += {
+      val base = (Compile / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if n >= 13 => base / "scala-2.13+"
         case _                       => base / "scala-2.13-"
       }
     },
-    unmanagedSourceDirectories in Test += {
-      val base = (sourceDirectory in Test).value
+    Test / unmanagedSourceDirectories += {
+      val base = (Test / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if n >= 13 => base / "scala-2.13+"
@@ -46,7 +46,7 @@ object Compiler {
         "-Ywarn-unused-import"
       )
     },
-    scalacOptions in Compile ++= {
+    Compile / scalacOptions ++= {
       if (scalaVersion.value != "2.11") Nil
       else Seq(
         "-Yconst-opt",
@@ -55,14 +55,14 @@ object Compiler {
         "-Yopt:_"
       )
     },
-    scalacOptions in (Compile, doc) := (scalacOptions in Test).value,
-    scalacOptions in (Compile, console) ~= {
+    Compile / doc / scalacOptions := (scalacOptions in Test).value,
+    Compile / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
-    scalacOptions in (Test, console) ~= {
+    Test / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
-    scalacOptions in (Compile, doc) ++= Seq(
+    Compile / doc / scalacOptions ++= Seq(
       "-unchecked", "-deprecation",
       /*"-diagrams", */"-implicits", "-skip-packages", "samples") ++
       Opts.doc.title("ReactiveMongo Play JSON API") ++
