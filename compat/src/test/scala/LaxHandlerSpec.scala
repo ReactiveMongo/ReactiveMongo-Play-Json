@@ -3,6 +3,7 @@ import reactivemongo.api.bson._
 import org.specs2.execute._, Typecheck._
 import org.specs2.matcher.TypecheckMatchers._
 
+@com.github.ghik.silencer.silent(".*jsObjectWrites.*")
 final class LaxHandlerSpec extends org.specs2.mutable.Specification {
   "Lax handler" title
 
@@ -14,7 +15,8 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
     role = "ipsum",
     created = BSONTimestamp(987654321L),
     lastModified = BSONDateTime(123456789L),
-    sym = Some(BSONSymbol("foo")))
+    sym = Some(BSONSymbol("foo")),
+    birth = Birth(BSONDateTime(987654321L), "bar"))
 
   "BSON handler" should {
     val repr = BSONDocument(
@@ -23,7 +25,10 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
       "role" -> "ipsum",
       "created" -> BSONTimestamp(987654321L),
       "lastModified" -> BSONDateTime(123456789L),
-      "sym" -> BSONSymbol("foo"))
+      "sym" -> BSONSymbol("foo"),
+      "birth" -> BSONDocument(
+        "date" -> user.birth.date,
+        "place" -> user.birth.place))
 
     "write as expected representation" in {
       BSON.writeDocument(user) must beSuccessfulTry(repr)
@@ -52,18 +57,24 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
           Json.toJson(user)
         }
 
-        userJs must_=== JsObject(Map[String, JsValue](
-          "_id" -> Json.obj(f"$$oid" -> user._id.stringify),
-          "role" -> JsString("ipsum"),
-          "username" -> JsString("lorem"),
-          "lastModified" -> JsObject(Map[String, JsValue](
-            f"$$date" -> Json.obj(
-              f"$$numberLong" -> JsString("123456789")))),
-          "created" -> JsObject(Map[String, JsValue](
-            f"$$timestamp" -> Json.obj(
-              "t" -> JsNumber(0),
-              "i" -> JsNumber(987654321)))),
-          "sym" -> Json.obj(f"$$symbol" -> JsString("foo"))))
+        userJs must_=== JsObject(
+          Map[String, JsValue](
+            "_id" -> Json.obj(f"$$oid" -> user._id.stringify),
+            "role" -> JsString("ipsum"),
+            "username" -> JsString("lorem"),
+            "lastModified" -> JsObject(Map[String, JsValue](
+              f"$$date" -> Json.obj(
+                f"$$numberLong" -> JsString("123456789")))),
+            "created" -> JsObject(Map[String, JsValue](
+              f"$$timestamp" -> Json.obj(
+                "t" -> JsNumber(0),
+                "i" -> JsNumber(987654321)))),
+            "sym" -> Json.obj(f"$$symbol" -> JsString("foo")),
+            "birth" -> Json.obj(
+              "date" -> JsObject(Map[String, JsValue](
+                f"$$date" -> Json.obj(
+                  f"$$numberLong" -> JsString("987654321")))),
+              "place" -> JsString("bar"))))
       }
 
       val userLaxJs: JsValue = {
@@ -74,13 +85,17 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
       }
 
       "write using lax syntax" in {
-        userLaxJs must_=== JsObject(Map[String, JsValue](
-          "role" -> JsString("ipsum"),
-          "username" -> JsString("lorem"),
-          "lastModified" -> JsNumber(123456789),
-          "_id" -> JsString(user._id.stringify),
-          "sym" -> JsString("foo"),
-          "created" -> JsNumber(987654321)))
+        userLaxJs must_=== JsObject(
+          Map[String, JsValue](
+            "role" -> JsString("ipsum"),
+            "username" -> JsString("lorem"),
+            "lastModified" -> JsNumber(123456789),
+            "_id" -> JsString(user._id.stringify),
+            "sym" -> JsString("foo"),
+            "created" -> JsNumber(987654321),
+            "birth" -> Json.obj(
+              "date" -> JsNumber(987654321),
+              "place" -> JsString("bar"))))
       }
 
       "fail to validate" in {
@@ -99,13 +114,28 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
 }
 
 object LaxHandlerFixtures {
+  case class Birth(
+    date: BSONDateTime,
+    place: String)
+
+  object Birth {
+    implicit val bsonWriter: BSONDocumentWriter[Birth] = Macros.writer[Birth]
+
+    implicit val bsonReader: BSONDocumentReader[Birth] = {
+      import reactivemongo.play.json.compat.lax._
+
+      Macros.reader[Birth]
+    }
+  }
+
   case class User(
     _id: BSONObjectID,
     username: String,
     role: String,
     created: BSONTimestamp,
     lastModified: BSONDateTime,
-    sym: Option[BSONSymbol])
+    sym: Option[BSONSymbol],
+    birth: Birth)
 
   object User {
     implicit val bsonWriter: BSONDocumentWriter[User] = Macros.writer[User]

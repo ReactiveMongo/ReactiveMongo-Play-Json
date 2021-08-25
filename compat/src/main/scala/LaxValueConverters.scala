@@ -84,7 +84,7 @@ private[json] sealed trait LaxValueConvertersLowPriority1 {
 
     case dt: BSONDateTime => fromDateTime(dt)
     case dec: BSONDecimal => fromDecimal(dec)
-    case doc: BSONDocument => fromDocument(doc)
+    case doc: BSONDocument => fromDocument(doc)(this)
     case d: BSONDouble => fromDouble(d)
     case i: BSONInteger => fromInteger(i)
 

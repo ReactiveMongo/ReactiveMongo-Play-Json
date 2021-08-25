@@ -55,7 +55,7 @@ object Compiler {
         "-Yopt:_"
       )
     },
-    Compile / doc / scalacOptions := (scalacOptions in Test).value,
+    Compile / doc / scalacOptions := (Test / scalacOptions).value,
     Compile / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
