@@ -137,7 +137,7 @@ sealed trait FromValue {
 
     case dt: BSONDateTime => conv.fromDateTime(dt)
     case dec: BSONDecimal => conv.fromDecimal(dec)
-    case doc: BSONDocument => conv.fromDocument(doc)
+    case doc: BSONDocument => conv.fromDocument(doc)(this)
     case d: BSONDouble => conv.fromDouble(d)
     case i: BSONInteger => conv.fromInteger(i)
 
