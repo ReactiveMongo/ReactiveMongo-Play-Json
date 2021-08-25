@@ -3,6 +3,7 @@ import reactivemongo.api.bson._
 import org.specs2.execute._, Typecheck._
 import org.specs2.matcher.TypecheckMatchers._
 
+@com.github.ghik.silencer.silent(".*jsObjectWrites.*")
 final class LaxHandlerSpec extends org.specs2.mutable.Specification {
   "Lax handler" title
 
