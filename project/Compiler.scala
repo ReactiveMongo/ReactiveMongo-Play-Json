@@ -103,10 +103,12 @@ object Compiler {
       if (scalaBinaryVersion.value != "3") {
         Seq(
           compilerPlugin(
-            ("com.github.ghik" %% "silencer-plugin" % silencerVer.value).
-              cross(CrossVersion.full)),
-          ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided).
-            cross(CrossVersion.full))
+            ("com.github.ghik" %% "silencer-plugin" % silencerVer.value)
+              .cross(CrossVersion.full)
+          ),
+          ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided)
+            .cross(CrossVersion.full)
+        )
       } else {
         Seq.empty
       }

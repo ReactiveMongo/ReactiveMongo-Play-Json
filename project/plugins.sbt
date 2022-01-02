@@ -1,6 +1,7 @@
 resolvers ++= Seq(
   Resolver.bintrayIvyRepo("typesafe", "sbt-plugins"),
-  "Tatami Releases" at "https://raw.github.com/cchantep/tatami/master/releases")
+  "Tatami Releases" at "https://raw.github.com/cchantep/tatami/master/releases"
+)
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.6")
 
