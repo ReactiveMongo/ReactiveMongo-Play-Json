@@ -13,7 +13,8 @@ object Common extends AutoPlugin {
   import Compiler.{ playLower, playUpper }
 
   val useShaded = settingKey[Boolean](
-    "Use ReactiveMongo-Shaded (see system property 'reactivemongo.shaded')")
+    "Use ReactiveMongo-Shaded (see system property 'reactivemongo.shaded')"
+  )
 
   val driverVersion = settingKey[String]("Version of the driver dependency")
 
@@ -32,13 +33,14 @@ object Common extends AutoPlugin {
     },
     version ~= { ver =>
       sys.env.get("RELEASE_SUFFIX") match {
-        case Some(suffix) => ver.split("-").toList match {
-          case major :: Nil =>
-            s"${major}-${suffix}"
+        case Some(suffix) =>
+          ver.split("-").toList match {
+            case major :: Nil =>
+              s"${major}-${suffix}"
 
-          case vs @ _ =>
-            ((vs.init :+ suffix) ++ vs.lastOption.toList).mkString("-")
-        }
+            case vs @ _ =>
+              ((vs.init :+ suffix) ++ vs.lastOption.toList).mkString("-")
+          }
 
         case _ => ver
       }
@@ -47,7 +49,8 @@ object Common extends AutoPlugin {
     resolvers ++= Seq(
       Resolver.sonatypeRepo("snapshots"),
       Resolver.sonatypeRepo("staging"),
-      Resolver.typesafeRepo("releases")),
+      Resolver.typesafeRepo("releases")
+    ),
     playVersion := {
       sys.env.get("PLAY_VERSION").getOrElse {
         if (scalaBinaryVersion.value == "2.11") playLower
