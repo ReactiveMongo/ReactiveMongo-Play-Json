@@ -53,8 +53,11 @@ object ValueConverters extends ValueConverters { converters =>
  *
  * ''Note:'' Logger `reactivemongo.api.play.json.ValueConverters` can be used to debug.
  */
-trait ValueConverters extends FromToValue with SharedValueConverters
-  with LowPriority1Converters with TemporalObjectConverters {
+trait ValueConverters
+    extends FromToValue
+    with SharedValueConverters
+    with LowPriority1Converters
+    with TemporalObjectConverters {
 
   final type JsonNumber = JsNumber
   final type JsonJavaScript = JsObject
@@ -72,7 +75,8 @@ trait ValueConverters extends FromToValue with SharedValueConverters
    *
    * `{ "\$code": "<javascript>" }`
    */
-  @inline implicit def fromJavaScript(bson: BSONJavaScript): JsObject = jsonJavaScript(bson)
+  @inline implicit def fromJavaScript(bson: BSONJavaScript): JsObject =
+    jsonJavaScript(bson)
 
   implicit final def fromLong(bson: BSONLong): JsNumber = JsNumber(bson.value)
 
@@ -99,6 +103,7 @@ trait ValueConverters extends FromToValue with SharedValueConverters
 }
 
 private[json] sealed trait LowPriority1Converters { self: ValueConverters =>
+
   @inline implicit final def fromValue(bson: BSONValue): JsValue =
     jsonValue(bson)(self)
 }

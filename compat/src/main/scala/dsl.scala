@@ -19,6 +19,7 @@ import reactivemongo.api.bson.BSONObjectID
  * }}}
  */
 package object dsl {
+
   /**
    * Represents a [[scala.Int]] value using [[https://docs.mongodb.com/manual/reference/mongodb-extended-json MongoDB Extended JSON]] syntax (v2).
    *

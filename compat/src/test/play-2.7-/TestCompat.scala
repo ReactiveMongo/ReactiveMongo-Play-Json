@@ -2,11 +2,7 @@ package reactivemongo
 
 import java.util.Locale
 
-import java.time.{
-  DateTimeException,
-  ZoneId,
-  Duration => JDuration
-}
+import java.time.{ DateTimeException, Duration => JDuration, ZoneId }
 import java.time.format.DateTimeParseException
 import java.time.temporal.{ ChronoUnit, TemporalUnit }
 
@@ -15,17 +11,21 @@ import scala.util.control
 import _root_.play.api.libs.json._
 
 object TestCompat {
+
   implicit object BigIntReads extends Reads[BigInt] {
+
     def reads(json: JsValue) = json match {
       case JsString(s) =>
-        control.Exception.catching(classOf[NumberFormatException]).
-          opt(JsSuccess(BigInt(new java.math.BigInteger(s)))).
-          getOrElse(JsError("error.expected.numberformatexception"))
+        control.Exception
+          .catching(classOf[NumberFormatException])
+          .opt(JsSuccess(BigInt(new java.math.BigInteger(s))))
+          .getOrElse(JsError("error.expected.numberformatexception"))
 
-      case JsNumber(d) => d.toBigIntExact match {
-        case Some(i) => JsSuccess(i)
-        case _ => JsError("error.invalid.biginteger")
-      }
+      case JsNumber(d) =>
+        d.toBigIntExact match {
+          case Some(i) => JsSuccess(i)
+          case _       => JsError("error.invalid.biginteger")
+        }
 
       case _ =>
         JsError("error.expected.jsnumberorjsstring")
@@ -37,16 +37,19 @@ object TestCompat {
   }
 
   implicit object BigIntegerReads extends Reads[java.math.BigInteger] {
+
     def reads(json: JsValue) = json match {
       case JsString(s) =>
-        control.Exception.catching(classOf[NumberFormatException]).
-          opt(JsSuccess(new java.math.BigInteger(s))).
-          getOrElse(JsError("error.expected.numberformatexception"))
+        control.Exception
+          .catching(classOf[NumberFormatException])
+          .opt(JsSuccess(new java.math.BigInteger(s)))
+          .getOrElse(JsError("error.expected.numberformatexception"))
 
-      case JsNumber(d) => d.toBigIntExact match {
-        case Some(i) => JsSuccess(i.underlying)
-        case _ => JsError("error.invalid.biginteger")
-      }
+      case JsNumber(d) =>
+        d.toBigIntExact match {
+          case Some(i) => JsSuccess(i.underlying)
+          case _       => JsError("error.invalid.biginteger")
+        }
 
       case _ =>
         JsError("error.expected.jsnumberorjsstring")
@@ -64,11 +67,12 @@ object TestCompat {
     Writes[Locale] { l => JsString(l.toLanguageTag) }
 
   implicit val zoneIdReads: Reads[ZoneId] = Reads[ZoneId] {
-    case JsString(s) => try {
-      JsSuccess(ZoneId.of(s))
-    } catch {
-      case _: DateTimeException => JsError("error.expected.timezone")
-    }
+    case JsString(s) =>
+      try {
+        JsSuccess(ZoneId.of(s))
+      } catch {
+        case _: DateTimeException => JsError("error.expected.timezone")
+      }
 
     case _ => JsError("error.expected.jsstring")
   }
@@ -80,11 +84,12 @@ object TestCompat {
     javaDurationNumberReads(ChronoUnit.MILLIS)
 
   implicit val durationReads: Reads[JDuration] = Reads[JDuration] {
-    case JsString(repr) => try {
-      JsSuccess(JDuration.parse(repr))
-    } catch {
-      case _: DateTimeParseException => JsError("error.invalid.duration")
-    }
+    case JsString(repr) =>
+      try {
+        JsSuccess(JDuration.parse(repr))
+      } catch {
+        case _: DateTimeParseException => JsError("error.invalid.duration")
+      }
 
     case js => javaDurationMillisReads.reads(js)
   }
@@ -98,7 +103,7 @@ object TestCompat {
   private def jdurationNumberReads(unit: TemporalUnit) =
     Reads[JDuration] {
       case n: JsNumber => n.validate[Long].map(l => JDuration.of(l, unit))
-      case _ => JsError("error.expected.longDuration")
+      case _           => JsError("error.expected.longDuration")
     }
 
 }

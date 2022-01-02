@@ -1,4 +1,3 @@
 package reactivemongo.play.json
 
-private[json] trait LowPriorityPackageCompat {
-}
+private[json] trait LowPriorityPackageCompat {}

@@ -2,20 +2,11 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
-//import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-import com.typesafe.tools.mima.plugin.MimaKeys._
-
 object Common extends AutoPlugin {
-  //import com.typesafe.tools.mima.core._
-
   override def trigger = allRequirements
   override def requires = JvmPlugin
 
   val previousVersion = "0.12.1"
-
-  private val silencerVer = Def.setting[String] {
-    "1.7.7"
-  }
 
   val playVersion = settingKey[String]("Play version")
   val playDirs = settingKey[Seq[String]]("Play source directory")
@@ -76,24 +67,6 @@ object Common extends AutoPlugin {
     },
     Test / unmanagedSourceDirectories ++= playDirs.value.map { dir =>
       (Test / sourceDirectory).value / dir
-    },
-    libraryDependencies ++= Seq(
-      "org.specs2" %% "specs2-core" % "4.10.6",
-      "org.slf4j" % "slf4j-simple" % "1.7.32").map(_ % Test),
-    libraryDependencies ++= Seq(
-      compilerPlugin(
-        ("com.github.ghik" %% "silencer-plugin" % silencerVer.value).
-          cross(CrossVersion.full)),
-      ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided).
-        cross(CrossVersion.full)),
-    // mimaDefaultSettings
-    mimaFailOnNoPrevious := false,
-    mimaPreviousArtifacts := {
-      if (scalaBinaryVersion.value != "2.13") {
-        Set(organization.value %% moduleName.value % previousVersion)
-      } else {
-        Set.empty[ModuleID]
-      }
     }
   ) ++ Publish.settings
 }

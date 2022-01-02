@@ -1,15 +1,15 @@
 import _root_.play.api.libs.json._
 
-import _root_.reactivemongo.api.bson._
-
-import org.specs2.execute._, Typecheck._
-import org.specs2.matcher.TypecheckMatchers._
-
-import reactivemongo.ExtendedJsonFixtures
+import reactivemongo.play.TestUtils._
 import reactivemongo.play.json.TestCompat.JsonValidationError
 
+import org.specs2.matcher.TypecheckMatchers._
+
+import _root_.reactivemongo.api.bson._
+import reactivemongo.ExtendedJsonFixtures
+
 final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
-  "Handler use cases" title
+  "Handler use cases".title
 
   // Global compatibility import:
   import reactivemongo.play.json.compat._
@@ -19,13 +19,18 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
     import ExtendedJsonFixtures.boid
 
     val user = User(
-      boid, "lorem", "ipsum",
+      boid,
+      "lorem",
+      "ipsum",
       created = BSONTimestamp(987654321L),
       lastModified = BSONDateTime(123456789L),
-      sym = Some(BSONSymbol("foo")))
+      sym = Some(BSONSymbol("foo"))
+    )
 
     "not be serializable on JSON without 'bson2json'" in {
-      typecheck("Json.toJson(user)") must failWith("No\\ Json\\ serializer\\ found\\ for\\ type\\ HandlerUseCaseSpec\\.User.*")
+      typecheck("Json.toJson(user)") must failWith(
+        "(ambiguous implicit|No Json serializer found).*"
+      )
     }
 
     "be represented in JSON using 'bson2json' conversions" >> {
@@ -84,10 +89,15 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
 
           userLaxJs must_=== jsn and {
             userLaxJs.validate[User] must beLike[JsResult[User]] {
-              case JsError((JsPath, JsonValidationError(
-                "Fails to handle '_id': BSONString != BSONObjectID" ::
-                  Nil) :: Nil) :: Nil) =>
-
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "Fails to handle '_id': BSONString != BSONObjectID" ::
+                        Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 ok
             }
           } and {
@@ -120,14 +130,21 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
       import json2bson._
 
       {
-        val doc = BSONDocument(
-          "number" -> 1,
-          "name" -> "rue de la lune")
+        val doc = BSONDocument("number" -> 1, "name" -> "rue de la lune")
 
         val street = Street(Some(1), "rue de la lune")
 
         s"with JSON syntax '${doc}'" in {
-          implicit val jsonFormat: OFormat[Street] = Json.format[Street]
+          implicit val jsonWrites: OWrites[Street] = OWrites[Street] { street =>
+            Json.obj("number" -> street.number, "name" -> street.name)
+          }
+
+          implicit val jsonReads: Reads[Street] = Reads[Street] { js =>
+            for {
+              number <- (js \ "number").validateOpt[Int]
+              name <- (js \ "name").validate[String]
+            } yield Street(number, name)
+          }
 
           {
             // Resolved from jsonFormat
@@ -148,17 +165,18 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
 
 // Test fixtures
 object HandlerUseCaseSpec {
+
   /*
    Note: Using BSON types in case class is not recommended,
    as it couples the case class with this specific persistence layer.
    */
   case class User(
-    _id: BSONObjectID, // Rather use UUID or String
-    username: String,
-    role: String,
-    created: BSONTimestamp, // Rather use Instance
-    lastModified: BSONDateTime,
-    sym: Option[BSONSymbol]) // Rather use String
+      _id: BSONObjectID, // Rather use UUID or String
+      username: String,
+      role: String,
+      created: BSONTimestamp, // Rather use Instance
+      lastModified: BSONDateTime,
+      sym: Option[BSONSymbol]) // Rather use String
 
   object User {
     implicit val bsonWriter: BSONDocumentWriter[User] = Macros.writer[User]
@@ -167,6 +185,6 @@ object HandlerUseCaseSpec {
   }
 
   case class Street(
-    number: Option[Int],
-    name: String)
+      number: Option[Int],
+      name: String)
 }
