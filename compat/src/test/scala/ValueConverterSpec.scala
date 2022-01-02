@@ -1,15 +1,16 @@
 package reactivemongo
 
 import _root_.play.api.libs.json._
+
 import reactivemongo.api.bson.{
   BSON,
-  BSONReader,
   BSONDocumentWriter,
+  BSONReader,
   BSONValue
 }
 
 final class ValueConverterSpec extends org.specs2.mutable.Specification {
-  "Value converters" title
+  "Value converters".title
 
   "Case class" should {
     "be properly serialized using default Play JSON handlers" >> {
@@ -26,7 +27,10 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
   // ---
 
   private def valueConversionSpec[T: OWrites](
-    value: T)(implicit jsr: Reads[T]) = {
+      value: T
+    )(implicit
+      jsr: Reads[T]
+    ) = {
 
     import _root_.reactivemongo.play.json.compat.ValueConverters._
 
@@ -49,15 +53,17 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
       val bsonR: BSONReader[T] = jsr
 
       bsonW.writeTry(value) must beSuccessfulTry[BSONValue].like {
-        case written => written must_=== bsonIn and {
-          bsonR.readTry(written) must beSuccessfulTry(value)
-        }
+        case written =>
+          written must_=== bsonIn and {
+            bsonR.readTry(written) must beSuccessfulTry(value)
+          }
       } and {
         // Not implicit conversion, but implicit derived instances
         BSON.write(value) must beSuccessfulTry[BSONValue].like {
-          case written => written must_=== bsonIn and {
-            BSON.read(written)(bsonR) must beSuccessfulTry(value)
-          }
+          case written =>
+            written must_=== bsonIn and {
+              BSON.read(written)(bsonR) must beSuccessfulTry(value)
+            }
         }
       }
     }
@@ -80,45 +86,126 @@ object PlayFixtures {
   import TestCompat._
 
   case class Foo(
-    int: Int,
-    short: Short,
-    byte: Byte,
-    str: String,
-    locale: Locale,
-    flag: Boolean,
-    bar: Bar)
+      int: Int,
+      short: Short,
+      byte: Byte,
+      str: String,
+      locale: Locale,
+      flag: Boolean,
+      bar: Bar)
 
   object Foo {
-    implicit val format: OFormat[Foo] = Json.format[Foo]
+
+    implicit val writes: OWrites[Foo] = OWrites[Foo] { foo =>
+      Json.obj(
+        "int" -> foo.int,
+        "short" -> foo.short,
+        "byte" -> foo.byte,
+        "str" -> foo.str,
+        "locale" -> foo.locale,
+        "flag" -> foo.flag,
+        "bar" -> foo.bar
+      )
+    }
+
+    implicit val reads: Reads[Foo] = Reads[Foo] { js =>
+      for {
+        int <- (js \ "int").validate[Int]
+        short <- (js \ "short").validate[Short]
+        byte <- (js \ "byte").validate[Byte]
+        str <- (js \ "str").validate[String]
+        locale <- (js \ "locale").validate[Locale]
+        flag <- (js \ "flag").validate[Boolean]
+        bar <- (js \ "bar").validate[Bar]
+      } yield Foo(int, short, byte, str, locale, flag, bar)
+    }
   }
 
   case class Bar(
-    duration: JDuration,
-    long: Long,
-    float: Float,
-    double: Double,
-    bigDec: BigDecimal,
-    bigInt: BigInt,
-    jbigInt: java.math.BigInteger,
-    lorem: Lorem)
+      duration: JDuration,
+      long: Long,
+      float: Float,
+      double: Double,
+      bigDec: BigDecimal,
+      bigInt: BigInt,
+      jbigInt: java.math.BigInteger,
+      lorem: Lorem)
 
   object Bar {
-    implicit val writes: OWrites[Bar] = Json.writes[Bar]
-    implicit val reads: Reads[Bar] = Json.reads
+
+    implicit val writes: OWrites[Bar] = OWrites[Bar] { bar =>
+      Json.obj(
+        "duration" -> bar.duration,
+        "long" -> bar.long,
+        "float" -> bar.float,
+        "double" -> bar.double,
+        "bigDec" -> bar.bigDec,
+        "bigInt" -> bar.bigInt,
+        "jbigInt" -> bar.jbigInt,
+        "lorem" -> bar.lorem
+      )
+    }
+
+    implicit val reads: Reads[Bar] = Reads[Bar] { js =>
+      for {
+        duration <- (js \ "duration").validate[JDuration]
+        long <- (js \ "long").validate[Long]
+        float <- (js \ "float").validate[Float]
+        double <- (js \ "double").validate[Double]
+        bigDec <- (js \ "bigDec").validate[BigDecimal]
+        bigInt <- (js \ "bigInt").validate[BigInt]
+        jbigInt <- (js \ "jbigInt").validate[java.math.BigInteger]
+        lorem <- (js \ "lorem").validate[Lorem]
+      } yield Bar(duration, long, float, double, bigDec, bigInt, jbigInt, lorem)
+    }
   }
 
   case class Lorem(
-    id: UUID,
-    date: Date,
-    instant: Instant,
-    localDate: LocalDate,
-    localDateTime: LocalDateTime,
-    offsetDateTime: OffsetDateTime,
-    zid: ZoneId,
-    zdt: ZonedDateTime)
+      id: UUID,
+      date: Date,
+      instant: Instant,
+      localDate: LocalDate,
+      localDateTime: LocalDateTime,
+      offsetDateTime: OffsetDateTime,
+      zid: ZoneId,
+      zdt: ZonedDateTime)
 
   object Lorem {
-    implicit val format: OFormat[Lorem] = Json.format
+
+    implicit val writes: OWrites[Lorem] = OWrites[Lorem] { lorem =>
+      Json.obj(
+        "id" -> lorem.id.toString,
+        "date" -> lorem.date,
+        "instant" -> lorem.instant,
+        "localDate" -> lorem.localDate,
+        "localDateTime" -> lorem.localDateTime,
+        "offsetDateTime" -> lorem.offsetDateTime,
+        "zid" -> lorem.zid,
+        "zdt" -> lorem.zdt
+      )
+    }
+
+    implicit val reads: Reads[Lorem] = Reads[Lorem] { js =>
+      for {
+        id <- (js \ "id").validate[UUID]
+        date <- (js \ "date").validate[Date]
+        instant <- (js \ "instant").validate[Instant]
+        localDate <- (js \ "localDate").validate[LocalDate]
+        localDateTime <- (js \ "localDateTime").validate[LocalDateTime]
+        offsetDateTime <- (js \ "offsetDateTime").validate[OffsetDateTime]
+        zid <- (js \ "zid").validate[ZoneId]
+        zdt <- (js \ "zdt").validate[ZonedDateTime]
+      } yield Lorem(
+        id,
+        date,
+        instant,
+        localDate,
+        localDateTime,
+        offsetDateTime,
+        zid,
+        zdt
+      )
+    }
   }
 
   val lorem = Lorem(
@@ -129,7 +216,8 @@ object PlayFixtures {
     localDateTime = LocalDateTime.now(),
     offsetDateTime = OffsetDateTime.now(),
     zid = ZoneId.systemDefault(),
-    zdt = ZonedDateTime.now())
+    zdt = ZonedDateTime.now()
+  )
 
   val bar = Bar(
     duration = JDuration.ofDays(2),
@@ -139,7 +227,8 @@ object PlayFixtures {
     bigDec = BigDecimal("10234.56789"),
     bigInt = BigInt(Long.MaxValue),
     jbigInt = new java.math.BigInteger("9876"),
-    lorem = lorem)
+    lorem = lorem
+  )
 
   val foo = Foo(
     int = 1,
@@ -148,6 +237,7 @@ object PlayFixtures {
     str = "value",
     locale = Locale.FRANCE,
     flag = false,
-    bar = bar)
+    bar = bar
+  )
 
 }

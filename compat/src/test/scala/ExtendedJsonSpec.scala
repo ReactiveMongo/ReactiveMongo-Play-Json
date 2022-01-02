@@ -32,14 +32,14 @@ import reactivemongo.api.bson.{
   Subtype
 }
 
-import reactivemongo.play.json.compat.{ JsFalse, JsTrue, dsl }
+import reactivemongo.play.json.compat.{ dsl, JsFalse, JsTrue }
 import reactivemongo.play.json.compat.extended._
 
 import org.specs2.specification.core.Fragment
 
 final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
 
-  "Extended JSON value converters" title
+  "Extended JSON value converters".title
 
   import ExtendedJsonFixtures._
 
@@ -47,9 +47,12 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
     "support binary" >> {
       val bytes = "Test".getBytes("UTF-8")
 
-      Fragment.foreach(Seq[(JsObject, BSONBinary)](
-        jsBinUuid -> BSONBinary(uuid),
-        jsBinGeneric -> BSONBinary(bytes, Subtype.GenericBinarySubtype))) {
+      Fragment.foreach(
+        Seq[(JsObject, BSONBinary)](
+          jsBinUuid -> BSONBinary(uuid),
+          jsBinGeneric -> BSONBinary(bytes, Subtype.GenericBinarySubtype)
+        )
+      ) {
         case (l, n) =>
           s"from JSON $l" in {
             implicitly[BSONValue](l) must_== n
@@ -63,14 +66,15 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
 
     "support boolean" >> {
       "from JSON" in {
-        implicitly[BSONBoolean](
-          JsBoolean(true)) must_=== BSONBoolean(true) and {
-            implicitly[BSONBoolean](JsBoolean(false)) must_=== BSONBoolean(false)
-          } and {
-            implicitly[BSONBoolean](JsTrue) must_=== BSONBoolean(true)
-          } and {
-            implicitly[BSONBoolean](JsFalse) must_=== BSONBoolean(false)
-          }
+        implicitly[BSONBoolean](JsBoolean(true)) must_=== BSONBoolean(
+          true
+        ) and {
+          implicitly[BSONBoolean](JsBoolean(false)) must_=== BSONBoolean(false)
+        } and {
+          implicitly[BSONBoolean](JsTrue) must_=== BSONBoolean(true)
+        } and {
+          implicitly[BSONBoolean](JsFalse) must_=== BSONBoolean(false)
+        }
       }
 
       "to BSON" in {
@@ -150,20 +154,24 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
 
       "from JSON" in {
         implicitly[BSONValue](jsJavaScriptWS(raw)) must_=== BSONJavaScriptWS(
-          raw, BSONDocument.empty)
+          raw,
+          BSONDocument.empty
+        )
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONJavaScriptWS(
-          raw, BSONDocument.empty)) must_=== jsJavaScriptWS(raw)
+        implicitly[JsObject](
+          BSONJavaScriptWS(raw, BSONDocument.empty)
+        ) must_=== jsJavaScriptWS(raw)
       }
     }
 
     "support long" >> {
       "from JSON" in {
         implicitly[BSONValue](dsl.long(1L)) must_=== BSONLong(1L) and {
-          implicitly[BSONValue](
-            JsNumber(Long.MaxValue)) must_=== BSONLong(Long.MaxValue)
+          implicitly[BSONValue](JsNumber(Long.MaxValue)) must_=== BSONLong(
+            Long.MaxValue
+          )
         }
       }
 

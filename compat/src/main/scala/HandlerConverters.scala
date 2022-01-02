@@ -8,8 +8,8 @@ import scala.util.{ Failure, Success }
 import _root_.play.api.libs.json.{
   Format,
   JsError,
-  JsSuccess,
   JsResultException,
+  JsSuccess,
   Json,
   OFormat,
   OWrites,
@@ -18,6 +18,7 @@ import _root_.play.api.libs.json.{
 }
 
 import reactivemongo.api.bson.{
+  exceptions,
   BSONDocumentHandler,
   BSONDocumentReader,
   BSONDocumentWriter,
@@ -25,18 +26,18 @@ import reactivemongo.api.bson.{
   BSONReader,
   BSONWriter,
   DocumentClass,
-  SafeBSONWriter,
-  exceptions
+  SafeBSONWriter
 }
 
 private[compat] object HandlerConverters {
-  val logger = org.slf4j.LoggerFactory.getLogger(
-    "reactivemongo.play.json.HandlerConverters")
+
+  val logger = org.slf4j.LoggerFactory
+    .getLogger("reactivemongo.play.json.HandlerConverters")
 
 }
 
 private[compat] trait Json2BsonConverters
-  extends LowPriority1Json2BsonConverters {
+    extends LowPriority1Json2BsonConverters {
 
   /**
    * Implicit conversion from Play JSON `OFormat` to the BSON API.
@@ -51,17 +52,25 @@ private[compat] trait Json2BsonConverters
    * }
    * }}}
    */
-  implicit final def toDocumentHandlerConv[T](h: OFormat[T])(implicit conv: FromValue): BSONDocumentHandler[T] = BSONDocumentHandler.provided[T](toDocumentReaderConv(h), toDocumentWriterConv(h))
+  implicit final def toDocumentHandlerConv[T](
+      h: OFormat[T]
+    )(implicit
+      conv: FromValue
+    ): BSONDocumentHandler[T] = BSONDocumentHandler
+    .provided[T](toDocumentReaderConv(h), toDocumentWriterConv(h))
 
-  implicit final def toHandler[T](h: Format[T])(
-    implicit
-    from: FromValue, to: ToValue): BSONHandler[T] =
+  implicit final def toHandler[T](
+      h: Format[T]
+    )(implicit
+      from: FromValue,
+      to: ToValue
+    ): BSONHandler[T] =
     BSONHandler.provided[T](toReaderConv(h), toWriterConv(h))
 
 }
 
 private[compat] trait Bson2JsonConverters
-  extends LowPriority1Bson2JsonConverters {
+    extends LowPriority1Bson2JsonConverters {
 
   /**
    * Implicit conversion from new `BSONDocumentHandler` to Play JSON.
@@ -76,17 +85,25 @@ private[compat] trait Bson2JsonConverters
    * }
    * }}}
    */
-  implicit final def fromDocumentHandlerConv[T](h: BSONDocumentHandler[T])(implicit from: FromValue, to: ToValue): OFormat[T] = OFormat[T](fromReaderConv(h), fromDocumentWriterConv(h))
+  implicit final def fromDocumentHandlerConv[T](
+      h: BSONDocumentHandler[T]
+    )(implicit
+      from: FromValue,
+      to: ToValue
+    ): OFormat[T] = OFormat[T](fromReaderConv(h), fromDocumentWriterConv(h))
 
-  implicit final def fromHandler[T](h: BSONHandler[T])(
-    implicit
-    from: FromValue, to: ToValue): Format[T] =
+  implicit final def fromHandler[T](
+      h: BSONHandler[T]
+    )(implicit
+      from: FromValue,
+      to: ToValue
+    ): Format[T] =
     Format[T](fromReaderConv(h), fromWriterConv(h))
 
 }
 
 private[compat] sealed trait LowPriority1Json2BsonConverters
-  extends LowPriority2Json2BsonConverters { _: Json2BsonConverters =>
+    extends LowPriority2Json2BsonConverters { _self: Json2BsonConverters =>
 
   /**
    * Provided there is a Play JSON `OWrites`, resolve a document writer.
@@ -102,7 +119,11 @@ private[compat] sealed trait LowPriority1Json2BsonConverters
    *
    * @see [[toDocumentWriterConv]]
    */
-  implicit final def toDocumentWriter[T](implicit w: OWrites[T], conv: ToValue): BSONDocumentWriter[T] = toDocumentWriterConv[T](w)
+  implicit final def toDocumentWriter[T](
+      implicit
+      w: OWrites[T],
+      conv: ToValue
+    ): BSONDocumentWriter[T] = toDocumentWriterConv[T](w)
 
   /**
    * {{{
@@ -115,12 +136,18 @@ private[compat] sealed trait LowPriority1Json2BsonConverters
    * }
    * }}}
    */
-  implicit final def toDocumentWriterConv[T](w: OWrites[T])(implicit conv: ToValue): BSONDocumentWriter[T] = BSONDocumentWriter[T] { t => conv.toDocument(w writes t) }
+  implicit final def toDocumentWriterConv[T](
+      w: OWrites[T]
+    )(implicit
+      conv: ToValue
+    ): BSONDocumentWriter[T] = BSONDocumentWriter[T] { t =>
+    conv.toDocument(w writes t)
+  }
 }
 
 private[compat] sealed trait LowPriority2Json2BsonConverters
-  extends LowPriority3Json2BsonConverters {
-  _: LowPriority1Json2BsonConverters =>
+    extends LowPriority3Json2BsonConverters {
+  _self: LowPriority1Json2BsonConverters with Json2BsonConverters =>
 
   /**
    * Converts a Play JSON `Reads` to a BSON reader.
@@ -135,17 +162,23 @@ private[compat] sealed trait LowPriority2Json2BsonConverters
    *
    * @see [[toDocumentWriterConv]]
    */
-  implicit final def toReaderConv[T](r: Reads[T])(
-    implicit
-    conv: FromValue): BSONReader[T] = BSONReader.from[T] { bson =>
+  implicit final def toReaderConv[T](
+      r: Reads[T]
+    )(implicit
+      conv: FromValue
+    ): BSONReader[T] = BSONReader.from[T] { bson =>
     val js = conv fromValue bson
 
     r.reads(js) match {
       case JsSuccess(result, _) => Success(result)
 
-      case _ => Failure(exceptions.TypeDoesNotMatchException(
-        js.getClass.getSimpleName,
-        bson.getClass.getSimpleName))
+      case _ =>
+        Failure(
+          exceptions.TypeDoesNotMatchException(
+            js.getClass.getSimpleName,
+            bson.getClass.getSimpleName
+          )
+        )
     }
   }
 
@@ -154,14 +187,18 @@ private[compat] sealed trait LowPriority2Json2BsonConverters
    * or a sealed trait (see `DocumentClass`).
    */
   implicit final def toDocumentReader[T: DocumentClass](
-    implicit
-    r: Reads[T], conv: FromValue): BSONDocumentReader[T] =
-    toDocumentReaderConv[T](r)
+      implicit
+      r: Reads[T],
+      conv: FromValue
+    ): BSONDocumentReader[T] = {
+    val _ = implicitly[DocumentClass[T]] // Avoid unused error
 
+    toDocumentReaderConv[T](r)
+  }
 }
 
 private[compat] sealed trait LowPriority1Bson2JsonConverters
-  extends LowPriority2Bson2JsonConverters { _: Bson2JsonConverters =>
+    extends LowPriority2Bson2JsonConverters { _self: Bson2JsonConverters =>
 
   /**
    * Resolves a `OWrites` provided a BSON document writer is found.
@@ -174,7 +211,11 @@ private[compat] sealed trait LowPriority1Bson2JsonConverters
    *   bson2json.fromDocumentWriter[T]
    * }}}
    */
-  implicit final def fromDocumentWriter[T](implicit w: BSONDocumentWriter[T], conv: FromValue): OWrites[T] = fromDocumentWriterConv(w)
+  implicit final def fromDocumentWriter[T](
+      implicit
+      w: BSONDocumentWriter[T],
+      conv: FromValue
+    ): OWrites[T] = fromDocumentWriterConv(w)
 
   /**
    * {{{
@@ -187,7 +228,10 @@ private[compat] sealed trait LowPriority1Bson2JsonConverters
    * }}}
    */
   implicit final def fromDocumentWriterConv[T](
-    w: BSONDocumentWriter[T])(implicit conv: FromValue): OWrites[T] =
+      w: BSONDocumentWriter[T]
+    )(implicit
+      conv: FromValue
+    ): OWrites[T] =
     OWrites[T] { t =>
       w.writeTry(t) match {
         case Success(d) => conv.fromDocument(d)
@@ -198,9 +242,15 @@ private[compat] sealed trait LowPriority1Bson2JsonConverters
 }
 
 private[compat] sealed trait LowPriority3Json2BsonConverters {
-  _: LowPriority2Json2BsonConverters =>
+  _self: LowPriority2Json2BsonConverters
+    with LowPriority1Json2BsonConverters
+    with Json2BsonConverters =>
 
-  implicit final def toWriterConv[T](w: Writes[T])(implicit conv: ToValue): BSONWriter[T] = BSONWriter[T] { t => conv.toValue(w writes t) }
+  implicit final def toWriterConv[T](
+      w: Writes[T]
+    )(implicit
+      conv: ToValue
+    ): BSONWriter[T] = BSONWriter[T] { t => conv.toValue(w writes t) }
 
   /**
    * {{{
@@ -214,10 +264,13 @@ private[compat] sealed trait LowPriority3Json2BsonConverters {
    * def canResolve: BSONWriter[JsValue] = implicitly[BSONWriter[JsValue]]
    * }}}
    */
-  implicit final def toWriter[T](implicit w: Writes[T], conv: ToValue): BSONWriter[T] = toWriterConv[T](w)(conv)
+  implicit final def toWriter[T](
+      implicit
+      w: Writes[T],
+      conv: ToValue
+    ): BSONWriter[T] = toWriterConv[T](w)(conv)
 
   /**
-   *
    * Raises a `JsError` is the JSON value is not a `JsObject`.
    *
    * {{{
@@ -228,7 +281,10 @@ private[compat] sealed trait LowPriority3Json2BsonConverters {
    * }}}
    */
   implicit final def toDocumentReaderConv[T](
-    r: Reads[T])(implicit conv: FromValue): BSONDocumentReader[T] =
+      r: Reads[T]
+    )(implicit
+      conv: FromValue
+    ): BSONDocumentReader[T] =
     BSONDocumentReader.from[T] { bson =>
       r.reads(conv fromDocument bson) match {
         case JsSuccess(result, _) => Success(result)
@@ -251,31 +307,35 @@ private[compat] sealed trait LowPriority3Json2BsonConverters {
    *
    * @see [[toDocumentWriterConv]]
    */
-  implicit final def toReader[T](implicit r: Reads[T], conv: FromValue): BSONReader[T] = toReaderConv(r)
+  implicit final def toReader[T](
+      implicit
+      r: Reads[T],
+      conv: FromValue
+    ): BSONReader[T] = toReaderConv(r)
 }
 
 private[compat] sealed trait LowPriority2Bson2JsonConverters {
-  _: LowPriority1Bson2JsonConverters =>
+  _self: LowPriority1Bson2JsonConverters with Bson2JsonConverters =>
 
-  implicit final def fromWriterConv[T](w: BSONWriter[T])(
-    implicit
-    conv: FromValue): Writes[T] =
+  implicit final def fromWriterConv[T](
+      w: BSONWriter[T]
+    )(implicit
+      conv: FromValue
+    ): Writes[T] =
     SafeBSONWriter.unapply(w) match {
-      case Some(sw) => Writes { t =>
-        conv.fromValue(sw safeWrite t)
-      }
+      case Some(sw) => Writes { t => conv.fromValue(sw safeWrite t) }
 
-      case _ => Writes {
-        w.writeTry(_) match {
-          case Success(v) => conv.fromValue(v)
-          case Failure(e) => throw e
+      case _ =>
+        Writes {
+          w.writeTry(_) match {
+            case Success(v) => conv.fromValue(v)
+            case Failure(e) => throw e
+          }
         }
-      }
     }
 
   /**
    * Provided there is a BSON writer, resolves a JSON one.
-   *
    *
    * {{{
    * import play.api.libs.json.Writes
@@ -285,18 +345,24 @@ private[compat] sealed trait LowPriority2Bson2JsonConverters {
    * def foo[T: BSONWriter] = implicitly[Writes[T]] // resolve fromWriter
    * }}}
    */
-  implicit final def fromWriter[T](implicit w: BSONWriter[T], conv: FromValue): Writes[T] = fromWriterConv(w)
+  implicit final def fromWriter[T](
+      implicit
+      w: BSONWriter[T],
+      conv: FromValue
+    ): Writes[T] = fromWriterConv(w)
 
-  implicit final def fromReaderConv[T](r: BSONReader[T])(
-    implicit
-    conv: ToValue): Reads[T] =
+  implicit final def fromReaderConv[T](
+      r: BSONReader[T]
+    )(implicit
+      conv: ToValue
+    ): Reads[T] =
     Reads[T] { js =>
       r.readTry(conv toValue js) match {
         case Success(t) => JsSuccess(t)
 
         case Failure(e) => {
-          HandlerConverters.logger.debug(
-            s"Fails to read JSON value: ${Json stringify js}", e)
+          HandlerConverters.logger
+            .debug(s"Fails to read JSON value: ${Json stringify js}", e)
 
           JsError(e.getMessage)
         }
@@ -314,6 +380,10 @@ private[compat] sealed trait LowPriority2Bson2JsonConverters {
    * def foo[T: BSONReader]: Reads[T] = implicitly[Reads[T]]
    * }}}
    */
-  implicit final def fromReader[T](implicit r: BSONReader[T], conv: ToValue): Reads[T] = fromReaderConv(r)
+  implicit final def fromReader[T](
+      implicit
+      r: BSONReader[T],
+      conv: ToValue
+    ): Reads[T] = fromReaderConv(r)
 
 }

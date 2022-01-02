@@ -1,23 +1,9 @@
 package reactivemongo.play.json
 
-/**
- * Implicit conversions for handler & value types between
- * `play.api.libs.json` and `reactivemongo.api.bson`,
- * by default using the [[https://docs.mongodb.com/manual/reference/mongodb-extended-json MongoDB Extended JSON]] syntax.
- *
- * {{{
- * import play.api.libs.json.JsValue
- * import reactivemongo.api.bson.BSONValue
- *
- * import reactivemongo.play.json.compat._
- *
- * def foo(v: BSONValue): JsValue = v // ValueConverters.fromValue
- * }}}
- *
- * For more specific imports, see [[ValueConverters]] and handler converters.
- */
-package object compat extends PackageCompat
-  with ValueConverters with LowPriorityPackageCompat {
+package object compat
+    extends PackageCompat
+    with PackageImplicits
+    with LowPriorityPackageCompat {
 
   override def toString = "compat"
 
@@ -64,8 +50,8 @@ package object compat extends PackageCompat
    * // { "_id": "as_string_instead_of_ObjectId" }
    * }}}
    */
-  object lax extends LaxValueConverters
-    with LaxHandlerWorkarounds { converters =>
+  object lax extends LaxValueConverters with LaxHandlerWorkarounds {
+    converters =>
 
     @inline implicit def fromValue: FromValue = converters
     @inline implicit def toValue: ToValue = converters

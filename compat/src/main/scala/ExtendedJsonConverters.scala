@@ -28,8 +28,11 @@ object ExtendedJsonConverters extends ExtendedJsonConverters { converters =>
 }
 
 private[json] trait ExtendedJsonConverters
-  extends FromToValue with ExtendedJsonCompat with SharedValueConverters
-  with LowPriority1ExtendedJson with TemporalObjectConverters {
+    extends FromToValue
+    with ExtendedJsonCompat
+    with SharedValueConverters
+    with LowPriority1ExtendedJson
+    with TemporalObjectConverters {
 
   final type JsonNumber = JsObject
   final type JsonJavaScript = JsObject
@@ -62,7 +65,8 @@ private[json] trait ExtendedJsonConverters
    *
    * `{ "\$code": "<javascript>" }`
    */
-  @inline implicit def fromJavaScript(bson: BSONJavaScript): JsObject = jsonJavaScript(bson)
+  @inline implicit def fromJavaScript(bson: BSONJavaScript): JsObject =
+    jsonJavaScript(bson)
 
   /**
    * See [[$syntaxDocBaseUrl/#bson.Int64 syntax]]:

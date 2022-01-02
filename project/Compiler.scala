@@ -5,55 +5,92 @@ object Compiler {
   val playLower = "2.5.0"
   val playUpper = "2.9.2"
 
+  private val silencerVer = Def.setting[String] {
+    "1.7.7"
+  }
+
   lazy val settings = Seq(
     scalaVersion := "2.12.15",
-    crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.7"),
+    crossScalaVersions := Seq(
+      "2.11.12",
+      scalaVersion.value,
+      "2.13.7",
+      "3.1.2-RC1-bin-20211222-c94b333-NIGHTLY"
+    ),
     ThisBuild / crossVersion := CrossVersion.binary,
     Compile / unmanagedSourceDirectories += {
       val base = (Compile / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n >= 13 => base / "scala-2.13+"
-        case _                       => base / "scala-2.13-"
+        case Some((2, n)) if n < 13 => base / "scala-2.13-"
+        case _                      => base / "scala-2.13+"
       }
     },
     Test / unmanagedSourceDirectories += {
       val base = (Test / sourceDirectory).value
 
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n >= 13 => base / "scala-2.13+"
-        case _                       => base / "scala-2.13-"
+        case Some((2, n)) if n < 13 => base / "scala-2.13-"
+        case _                      => base / "scala-2.13+"
       }
     },
     scalacOptions ++= Seq(
-      "-encoding", "UTF-8", "-target:jvm-1.8",
+      "-encoding",
+      "UTF-8",
       "-unchecked",
       "-deprecation",
       "-feature",
       "-Xfatal-warnings",
-      "-Xlint",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-dead-code",
-      "-Ywarn-value-discard",
-      "-g:vars"
+      "-language:higherKinds"
     ),
     scalacOptions ++= {
-      if (scalaBinaryVersion.value == "2.13") Nil
-      else Seq(
-        "-Xmax-classfile-name", "128",
-        "-Ywarn-infer-any",
-        "-Ywarn-unused",
-        "-Ywarn-unused-import"
-      )
+      if (scalaBinaryVersion.value startsWith "2.") {
+        Seq(
+          "-target:jvm-1.8",
+          "-Xlint",
+          "-g:vars"
+        )
+      } else Seq()
     },
-    Compile / scalacOptions ++= {
-      if (scalaVersion.value != "2.11") Nil
-      else Seq(
-        "-Yconst-opt",
-        "-Yclosure-elim",
-        "-Ydead-code",
-        "-Yopt:_"
-      )
+    scalacOptions ++= {
+      val sv = scalaBinaryVersion.value
+
+      if (sv == "2.12") {
+        Seq(
+          "-Xmax-classfile-name",
+          "128",
+          "-Ywarn-numeric-widen",
+          "-Ywarn-dead-code",
+          "-Ywarn-value-discard",
+          "-Ywarn-infer-any",
+          "-Ywarn-unused",
+          "-Ywarn-unused-import",
+          "-Xlint:missing-interpolator",
+          "-Ywarn-macros:after"
+        )
+      } else if (sv == "2.11") {
+        Seq(
+          "-Xmax-classfile-name",
+          "128",
+          "-Yopt:_",
+          "-Ydead-code",
+          "-Yclosure-elim",
+          "-Yconst-opt"
+        )
+      } else if (sv == "2.13") {
+        Seq(
+          "-explaintypes",
+          "-Werror",
+          "-Wnumeric-widen",
+          "-Wdead-code",
+          "-Wvalue-discard",
+          "-Wextra-implicit",
+          "-Wmacros:after",
+          "-Wunused"
+        )
+      } else {
+        Seq("-Wunused:all", "-language:implicitConversions")
+      }
     },
     Compile / doc / scalacOptions := (Test / scalacOptions).value,
     Compile / console / scalacOptions ~= {
@@ -62,10 +99,17 @@ object Compiler {
     Test / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
-    Compile / doc / scalacOptions ++= Seq(
-      "-unchecked", "-deprecation",
-      /*"-diagrams", */"-implicits", "-skip-packages", "samples") ++
-      Opts.doc.title("ReactiveMongo Play JSON API") ++
-      Opts.doc.version(Release.major.value)
+    libraryDependencies ++= {
+      if (scalaBinaryVersion.value != "3") {
+        Seq(
+          compilerPlugin(
+            ("com.github.ghik" %% "silencer-plugin" % silencerVer.value).
+              cross(CrossVersion.full)),
+          ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided).
+            cross(CrossVersion.full))
+      } else {
+        Seq.empty
+      }
+    }
   )
 }

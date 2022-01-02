@@ -33,14 +33,18 @@ import reactivemongo.api.bson.{
   BSONString,
   BSONSymbol,
   BSONTimestamp,
-  BSONUndefined,
   BSONValue
 }
 
 private[json] trait FromToValue extends FromValue with ToValue
 
+private[compat] sealed trait FromValueAPI {
+  def fromValue(bson: BSONValue): JsValue
+}
+
 /** Conversion API from BSON to JSON values */
-sealed trait FromValue {
+sealed trait FromValue extends FromValueCompat with FromValueAPI {
+
   /** JSON representation for numbers */
   type JsonNumber <: JsValue
 
@@ -81,24 +85,8 @@ sealed trait FromValue {
   private[reactivemongo] val JsMaxKey =
     JsObject(Map[String, JsValue](f"$$maxKey" -> JsNumber(1)))
 
-  /**
-   * See [[https://github.com/mongodb/specifications/blob/master/source/extended-json.rst syntax]]:
-   *
-   * `{ "\$maxKey": 1 }`
-   */
-  implicit final val fromMaxKey: BSONMaxKey => JsObject = _ => JsMaxKey
-
   private[reactivemongo] val JsMinKey =
     JsObject(Map[String, JsValue](f"$$minKey" -> JsNumber(1)))
-
-  /**
-   * See [[https://github.com/mongodb/specifications/blob/master/source/extended-json.rst syntax]]:
-   *
-   * `{ "\$minKey": 1 }`
-   */
-  implicit final val fromMinKey: BSONMinKey => JsObject = _ => JsMinKey
-
-  implicit val fromNull: BSONNull => JsNull.type = _ => JsNull
 
   type JsonObjectID <: JsValue
 
@@ -117,43 +105,38 @@ sealed trait FromValue {
   private[reactivemongo] val JsUndefined =
     JsObject(Map[String, JsValue](f"$$undefined" -> JsTrue))
 
-  /**
-   * See [[https://github.com/mongodb/specifications/blob/master/source/extended-json.rst syntax]]:
-   *
-   * `{ "\$undefined": true }`
-   */
-  implicit final val fromUndefined: BSONUndefined => JsObject = _ => JsUndefined
-
   def fromValue(bson: BSONValue): JsValue
 
-  final protected def jsonValue(bson: BSONValue)(
-    implicit
-    conv: FromValue): JsValue = bson match {
-    case arr: BSONArray => conv.fromArray(arr)
+  final protected def jsonValue(
+      bson: BSONValue
+    )(implicit
+      conv: FromValue
+    ): JsValue = bson match {
+    case arr: BSONArray  => conv.fromArray(arr)
     case bin: BSONBinary => conv.fromBinary(bin)
 
     case BSONBoolean(true) => JsTrue
-    case BSONBoolean(_) => JsFalse
+    case BSONBoolean(_)    => JsFalse
 
-    case dt: BSONDateTime => conv.fromDateTime(dt)
-    case dec: BSONDecimal => conv.fromDecimal(dec)
+    case dt: BSONDateTime  => conv.fromDateTime(dt)
+    case dec: BSONDecimal  => conv.fromDecimal(dec)
     case doc: BSONDocument => conv.fromDocument(doc)(this)
-    case d: BSONDouble => conv.fromDouble(d)
-    case i: BSONInteger => conv.fromInteger(i)
+    case d: BSONDouble     => conv.fromDouble(d)
+    case i: BSONInteger    => conv.fromInteger(i)
 
-    case js: BSONJavaScript => conv.fromJavaScript(js)
+    case js: BSONJavaScript    => conv.fromJavaScript(js)
     case jsw: BSONJavaScriptWS => conv.fromJavaScriptWS(jsw)
 
     case l: BSONLong => conv.fromLong(l)
 
     case BSONMaxKey => JsMaxKey
     case BSONMinKey => JsMinKey
-    case BSONNull => JsNull
+    case BSONNull   => JsNull
 
     case oid: BSONObjectID => conv.fromObjectID(oid)
-    case re: BSONRegex => conv.fromRegex(re)
-    case str: BSONString => conv.fromStr(str)
-    case sym: BSONSymbol => conv.fromSymbol(sym)
+    case re: BSONRegex     => conv.fromRegex(re)
+    case str: BSONString   => conv.fromStr(str)
+    case sym: BSONSymbol   => conv.fromSymbol(sym)
     case ts: BSONTimestamp => conv.fromTimestamp(ts)
 
     case _ => JsUndefined
@@ -171,8 +154,11 @@ object FromValue {
 }
 
 /** Conversion API from BSON to JSON values */
-sealed trait ToValue {
-  implicit final def toJsValueWrapper[T <: BSONValue](value: T): Json.JsValueWrapper = implicitly[Json.JsValueWrapper](fromValue(value))
+sealed trait ToValue extends ToValueCompat { _self: FromValueAPI =>
+
+  implicit final def toJsValueWrapper[T <: BSONValue](
+      value: T
+    ): Json.JsValueWrapper = implicitly[Json.JsValueWrapper](fromValue(value))
 
   implicit final def toArray(arr: JsArray): BSONArray =
     BSONArray(arr.value.map(toValue))
@@ -188,8 +174,6 @@ sealed trait ToValue {
    * - otherwise it's converted to a BSON long integer (int64).
    */
   def toNumber(js: JsNumber): BSONValue
-
-  implicit final val toNull: JsNull.type => BSONNull = _ => BSONNull
 
   @SuppressWarnings(Array("NullParameter"))
   implicit final def toStr(js: JsString): BSONValue = {

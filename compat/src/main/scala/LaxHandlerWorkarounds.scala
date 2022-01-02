@@ -6,6 +6,7 @@ import scala.util.{ Failure, Success }
 import play.api.libs.json.{ JsError, JsSuccess, Reads }
 
 import reactivemongo.api.bson.{
+  exceptions,
   BSONDateTime,
   BSONInteger,
   BSONJavaScript,
@@ -14,9 +15,10 @@ import reactivemongo.api.bson.{
   BSONReader,
   BSONString,
   BSONSymbol,
-  BSONTimestamp,
-  exceptions
-}, exceptions.TypeDoesNotMatchException
+  BSONTimestamp
+}
+
+import exceptions.TypeDoesNotMatchException
 
 private[compat] trait LaxHandlerWorkarounds {
 
@@ -24,17 +26,15 @@ private[compat] trait LaxHandlerWorkarounds {
    * Reads a `BSONDateTime` from a JSON number.
    */
   implicit val dateTimeReads: Reads[BSONDateTime] =
-    Reads[BSONDateTime] { v =>
-      v.validate[Long].map(BSONDateTime(_))
-    }
+    Reads[BSONDateTime] { v => v.validate[Long].map(BSONDateTime(_)) }
 
   /**
    * Reads a `BSONDateTime` from a `BSONLong`.
    */
   implicit val bsonDateTimeReader: BSONReader[BSONDateTime] =
     BSONReader.collect[BSONDateTime] {
-      case d: BSONDateTime => d
-      case BSONLong(time) => BSONDateTime(time)
+      case d: BSONDateTime   => d
+      case BSONLong(time)    => BSONDateTime(time)
       case BSONInteger(time) => BSONDateTime(time.toLong)
     }
 
@@ -81,8 +81,9 @@ private[compat] trait LaxHandlerWorkarounds {
         BSONObjectID.parse(repr)
 
       case bson =>
-        Failure(TypeDoesNotMatchException(
-          "BSONString", bson.getClass.getSimpleName))
+        Failure(
+          TypeDoesNotMatchException("BSONString", bson.getClass.getSimpleName)
+        )
     }
 
   /**
@@ -98,7 +99,7 @@ private[compat] trait LaxHandlerWorkarounds {
    */
   implicit val bsonSymbolReader: BSONReader[BSONSymbol] =
     BSONReader.collect[BSONSymbol] {
-      case s: BSONSymbol => s
+      case s: BSONSymbol    => s
       case BSONString(name) => BSONSymbol(name)
     }
 
@@ -115,9 +116,9 @@ private[compat] trait LaxHandlerWorkarounds {
    */
   implicit val bsonTimestampReader: BSONReader[BSONTimestamp] =
     BSONReader.collect[BSONTimestamp] {
-      case t: BSONTimestamp => t
+      case t: BSONTimestamp  => t
       case BSONInteger(time) => BSONTimestamp(time.toLong)
-      case BSONLong(time) => BSONTimestamp(time)
+      case BSONLong(time)    => BSONTimestamp(time)
     }
 
 }

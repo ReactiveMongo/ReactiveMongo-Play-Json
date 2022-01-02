@@ -1,18 +1,16 @@
 package reactivemongo
 
-import com.github.ghik.silencer.silent
-
 import _root_.play.api.libs.json.{
   Format,
-  JsNumber,
-  Json,
   JsError,
+  JsNumber,
   JsObject,
   JsPath,
   JsResult,
-  JsSuccess,
   JsString,
+  JsSuccess,
   JsValue,
+  Json,
   OFormat,
   OWrites,
   Reads,
@@ -35,19 +33,22 @@ import reactivemongo.api.bson.{
   BSONString,
   BSONSymbol,
   BSONTimestamp,
-  BSONValue,
   BSONWriter,
   Macros
 }
 
-import reactivemongo.play.json.TestCompat.{ JsonValidationError, toJsObject }
+import reactivemongo.play.json.TestCompat.{ toJsObject, JsonValidationError }
+import reactivemongo.play.json.compat._
 
 import org.specs2.specification.core.Fragment
 
-final class HandlerConverterSpec extends org.specs2.mutable.Specification {
-  "Handler converters" title
+import com.github.ghik.silencer.silent
 
-  import reactivemongo.play.json.compat._
+final class HandlerConverterSpec
+    extends org.specs2.mutable.Specification
+    with HandlerConverterSpecCompat {
+
+  "Handler converters".title
 
   "Converters" should {
     "from JSON" >> {
@@ -55,26 +56,30 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
       "convert reader" >> {
         "for BSONLong" in {
-          implicit val jr = Reads[Long] { _ => JsSuccess(1L) }
+          implicit val jr: Reads[Long] = Reads[Long] { _ => JsSuccess(1L) }
           def bvr: BSONReader[Long] = jr
-          def bdr: BSONDocumentReader[Long] = jr
+          def bdr: BSONDocumentReader[Long] = implicitly[Reads[Long]]
 
           toReaderConv(jr).readTry(BSONLong(2L)) must beSuccessfulTry(1L) and {
             bvr.readTry(BSONLong(3L)) must beSuccessfulTry(1L)
           } and {
             bvr.readTry(dsl.long(4L)) must beSuccessfulTry(1L)
           } and {
-            bdr.readTry(BSONDocument(
-              f"$$numberLong" -> 1)) must beSuccessfulTry(1L)
+            bdr.readTry(
+              BSONDocument(f"$$numberLong" -> 1)
+            ) must beSuccessfulTry(1L)
           }
         }
 
         "for BSONObjectID" in {
           import ExtendedJsonFixtures.boid
 
-          implicit val jr = Reads[BSONObjectID] { _ => JsSuccess(boid) }
+          implicit val jr: Reads[BSONObjectID] =
+            Reads[BSONObjectID] { _ => JsSuccess(boid) }
+
           def br1: BSONReader[BSONObjectID] = jr
-          def br2 = implicitly[BSONReader[BSONObjectID]]
+          def br2: BSONReader[BSONObjectID] =
+            implicitly[Reads[BSONObjectID]]
 
           toReaderConv(jr).readTry(boid) must beSuccessfulTry(boid) and {
             br1.readTry(dsl.objectID(boid)) must beSuccessfulTry(boid)
@@ -89,19 +94,22 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
           val w: BSONWriter[JsValue] = implicitly[BSONWriter[JsValue]]
 
           w.writeTry(JsString("foo")) must beSuccessfulTry(
-            BSONString("foo")) and {
-              w.writeOpt(Json.obj("bar" -> 1)) must beSome(
-                BSONDocument("bar" -> 1))
-            }
+            BSONString("foo")
+          ) and {
+            w.writeOpt(Json.obj("bar" -> 1)) must beSome(
+              BSONDocument("bar" -> 1)
+            )
+          }
         }
       }
 
       "convert handler" in {
         object Foo
 
-        implicit val jh = Format[Foo.type](
+        implicit val jh: Format[Foo.type] = Format[Foo.type](
           Reads { _ => JsSuccess(Foo) },
-          Writes { _: Foo.type => JsNumber(1) })
+          Writes { (_: Foo.type) => JsNumber(1) }
+        )
 
         def bh: BSONHandler[Foo.type] = jh
 
@@ -130,7 +138,7 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
         "for document" in {
           import ExtendedJsonFixtures.{ bdoc, jdoc }
 
-          implicit val br = implicitly[BSONDocumentReader[BSONDocument]]
+          val br = implicitly[BSONDocumentReader[BSONDocument]]
           val jr1: Reads[BSONDocument] = br
           val jr2 = implicitly[Reads[BSONDocument]]
 
@@ -143,9 +151,7 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
       "convert handler" in {
         object Bar
 
-        implicit val bh = BSONHandler[Bar.type](
-          _ => Bar,
-          _ => BSONDouble(1.2D))
+        implicit val bh = BSONHandler[Bar.type](_ => Bar, _ => BSONDouble(1.2D))
 
         def jh: Format[Bar.type] = bh
 
@@ -189,7 +195,9 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
       "in writer" >> {
         "as document for BSONDouble" in {
           val doc = BSONDocument("ok" -> 1)
-          implicit val jw = OWrites[Double] { _ => Json.obj("ok" -> 1) }
+          implicit val jw: OWrites[Double] =
+            OWrites[Double] { _ => Json.obj("ok" -> 1) }
+
           def bw1: BSONDocumentWriter[Double] = jw
           def bw2 = implicitly[BSONDocumentWriter[Double]]
 
@@ -226,20 +234,22 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
       "in reader" in {
         implicit val jr: Reads[Float] = Reads[Float](_ => JsSuccess(1.2F))
         def br1: BSONReader[Float] = jr
-        def br2 = implicitly[BSONReader[Float]]
+        def br2: BSONReader[Float] = implicitly[Reads[Float]]
 
         toDocumentReaderConv(jr).readTry(
-          BSONDocument("ok" -> 1)) must beSuccessfulTry(1.2F) and {
-            br1.readTry(BSONDocument("ok" -> 2)) must beSuccessfulTry(1.2F)
-          } and {
-            br2.readTry(BSONDocument("ok" -> 3)) must beSuccessfulTry(1.2F)
-          }
+          BSONDocument("ok" -> 1)
+        ) must beSuccessfulTry(1.2F) and {
+          br1.readTry(BSONDocument("ok" -> 2)) must beSuccessfulTry(1.2F)
+        } and {
+          br2.readTry(BSONDocument("ok" -> 3)) must beSuccessfulTry(1.2F)
+        }
       }
 
       "in handler" in {
         implicit val jh = OFormat[None.type](
           Reads { _ => JsSuccess(None) },
-          OWrites { _: None.type => Json.obj() })
+          OWrites { (_: None.type) => Json.obj() }
+        )
 
         val bh: BSONDocumentHandler[None.type] = jh
 
@@ -253,8 +263,10 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
       import bson2json._
 
       "in writer" in {
-        val doc = Json.obj("ok" -> 2)
-        implicit val bw = BSONDocumentWriter[Int](_ => BSONDocument("ok" -> 2))
+        val doc = Json.obj("ok" -> JsNumber(2))
+        implicit val bw: BSONDocumentWriter[Int] =
+          BSONDocumentWriter[Int](_ => BSONDocument("ok" -> BSONInteger(2)))
+
         def jw1: OWrites[Int] = bw
         def jw2 = implicitly[OWrites[Int]]
 
@@ -269,19 +281,18 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
         implicit val br = BSONDocumentReader[None.type](_ => None)
         def jr: Reads[None.type] = br
 
-        fromReaderConv(br).
-          reads(Json.obj("ok" -> 1)) must beLike[JsResult[None.type]] {
-            case JsSuccess(None, _) => jr.reads(Json.obj(
-              "ok" -> 2)) must beLike[JsResult[None.type]] {
+        fromReaderConv(br)
+          .reads(Json.obj("ok" -> 1)) must beLike[JsResult[None.type]] {
+          case JsSuccess(None, _) =>
+            jr.reads(Json.obj("ok" -> 2)) must beLike[JsResult[None.type]] {
               case JsSuccess(None, _) => ok
             }
-          }
+        }
       }
 
       "in handler" in {
-        implicit val bh = BSONDocumentHandler[Unit](
-          _ => (),
-          _ => BSONDocument("foo" -> 1L))
+        implicit val bh: BSONDocumentHandler[Unit] =
+          BSONDocumentHandler[Unit](_ => (), _ => BSONDocument("foo" -> 1L))
 
         val jh: OFormat[Unit] = bh
 
@@ -292,7 +303,13 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
     }
 
     "resolve JSON codecs for BSON values" >> {
-      def spec[T <: BSONValue: Reads: Writes: Format] = ok
+      def spec[T: Reads: Writes] = {
+        implicitly[Reads[T]] must not(beNull) and {
+          implicitly[Writes[T]] must not(beNull)
+        } and {
+          implicitly[Format[T]] must not(beNull)
+        }
+      }
 
       import bson2json._
 
@@ -326,8 +343,14 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           { // without lax
             js.validate[BSONDateTime] must beLike[JsResult[BSONDateTime]] {
-              case JsError((JsPath, JsonValidationError(
-                "BSONLong != BSONDateTime" :: Nil) :: Nil) :: Nil) =>
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "BSONLong != BSONDateTime" :: Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 js.validate[Long] must_=== JsSuccess(fixture.value)
             }
           } and {
@@ -352,8 +375,8 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           {
             // fromDocumentWriter with lax
-            fromDocumentWriter[FooDateTime](
-              fooWriter, lax).writes(foo) must_=== fooJs and {
+            fromDocumentWriter[FooDateTime](fooWriter, lax)
+              .writes(foo) must_=== fooJs and {
               // Check implicits integration
               import lax._
 
@@ -361,13 +384,15 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             } and {
               fooJs must_=== Json.obj(
                 "bar" -> "bar",
-                "v" -> JsNumber(fixture.value))
+                "v" -> JsNumber(fixture.value)
+              )
             }
           } and {
             // BSON conversion from JSON representation
-            toDocument(fooJs) must_=== BSONDocument(
+            lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
-              "v" -> BSONLong(fixture.value))
+              "v" -> BSONLong(fixture.value)
+            )
           } and {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooDateTime] = {
@@ -376,34 +401,46 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
               Macros.reader[FooDateTime]
             }
 
-            lax.dateTimeReads.reads(
-              JsNumber(fixture.value)) must_=== JsSuccess(fixture) and {
-                fromReader[FooDateTime](Macros.reader[FooDateTime], lax).
-                  reads(fooJs) must beLike[JsResult[FooDateTime]] {
-                    case JsError((JsPath, JsonValidationError(
-                      "Fails to handle 'v': BSONLong != BSONDateTime" ::
-                        Nil) :: Nil) :: Nil) => ok
-                  }
-              } and {
-                fromReader[FooDateTime](fooBsonReader, lax).
-                  reads(fooJs) must_=== JsSuccess(foo)
-              } and {
-                fooJs.validate[FooDateTime](
-                  fooBsonReader) must_=== JsSuccess(foo)
-              } and {
-                implicit val fooJsonReader: Reads[FooDateTime] = {
-                  import lax.dateTimeReads
-
-                  Json.reads[FooDateTime]
-                }
-
-                fooJs.validate[FooDateTime] must_=== JsSuccess(foo)
-              } and {
-                // Check implicits integration
-                implicit def br: BSONDocumentReader[FooDateTime] = fooBsonReader
-
-                fooJs.validate[FooDateTime] must_=== JsSuccess(foo)
+            lax.dateTimeReads.reads(JsNumber(fixture.value)) must_=== JsSuccess(
+              fixture
+            ) and {
+              fromReader[FooDateTime](Macros.reader[FooDateTime], lax)
+                .reads(fooJs) must beLike[JsResult[FooDateTime]] {
+                case JsError(
+                      (
+                        JsPath,
+                        JsonValidationError(
+                          "Fails to handle 'v': BSONLong != BSONDateTime" ::
+                          Nil
+                        ) :: Nil
+                      ) :: Nil
+                    ) =>
+                  ok
               }
+            } and {
+              fromReader[FooDateTime](fooBsonReader, lax)
+                .reads(fooJs) must_=== JsSuccess(foo)
+            } and {
+              fooJs.validate[FooDateTime](fooBsonReader) must_=== JsSuccess(foo)
+            } and {
+              implicit val fooJsonReader: Reads[FooDateTime] = {
+                import lax.dateTimeReads
+
+                Reads[FooDateTime] { js =>
+                  for {
+                    bar <- (js \ "bar").validate[String]
+                    v <- (js \ "v").validate[BSONDateTime]
+                  } yield FooDateTime(bar, v)
+                }
+              }
+
+              fooJs.validate[FooDateTime] must_=== JsSuccess(foo)
+            } and {
+              // Check implicits integration
+              implicit def br: BSONDocumentReader[FooDateTime] = fooBsonReader
+
+              fooJs.validate[FooDateTime] must_=== JsSuccess(foo)
+            }
           }
         }
       }
@@ -426,8 +463,14 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           { // without lax
             js.validate[BSONJavaScript] must beLike[JsResult[BSONJavaScript]] {
-              case JsError((JsPath, JsonValidationError(
-                "BSONString != BSONJavaScript" :: Nil) :: Nil) :: Nil) =>
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "BSONString != BSONJavaScript" :: Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 js.validate[String] must_=== JsSuccess(fixture.value)
             }
           } and {
@@ -452,8 +495,8 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           {
             // fromDocumentWriter with lax
-            fromDocumentWriter[FooJavaScript](
-              fooWriter, lax).writes(foo) must_=== fooJs and {
+            fromDocumentWriter[FooJavaScript](fooWriter, lax)
+              .writes(foo) must_=== fooJs and {
               // Check implicits integration
               import lax._
 
@@ -461,13 +504,15 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             } and {
               fooJs must_=== Json.obj(
                 "bar" -> "bar",
-                "v" -> JsString(fixture.value))
+                "v" -> JsString(fixture.value)
+              )
             }
           } and {
             // BSON conversion from JSON representation
-            toDocument(fooJs) must_=== BSONDocument(
+            lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
-              "v" -> BSONString(fixture.value))
+              "v" -> BSONString(fixture.value)
+            )
           } and {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooJavaScript] = {
@@ -477,33 +522,47 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             }
 
             lax.javaScriptReads.reads(
-              JsString(fixture.value)) must_=== JsSuccess(fixture) and {
-                fromReader[FooJavaScript](Macros.reader[FooJavaScript], lax).
-                  reads(fooJs) must beLike[JsResult[FooJavaScript]] {
-                    case JsError((JsPath, JsonValidationError(
-                      "Fails to handle 'v': BSONString != BSONJavaScript" ::
-                        Nil) :: Nil) :: Nil) => ok
-                  }
-              } and {
-                fromReader[FooJavaScript](fooBsonReader, lax).
-                  reads(fooJs) must_=== JsSuccess(foo)
-              } and {
-                fooJs.validate[FooJavaScript](
-                  fooBsonReader) must_=== JsSuccess(foo)
-              } and {
-                implicit val fooJsonReader: Reads[FooJavaScript] = {
-                  import lax.javaScriptReads
-
-                  Json.reads[FooJavaScript]
-                }
-
-                fooJs.validate[FooJavaScript] must_=== JsSuccess(foo)
-              } and {
-                // Check implicits integration
-                implicit def br: BSONDocumentReader[FooJavaScript] = fooBsonReader
-
-                fooJs.validate[FooJavaScript] must_=== JsSuccess(foo)
+              JsString(fixture.value)
+            ) must_=== JsSuccess(fixture) and {
+              fromReader[FooJavaScript](Macros.reader[FooJavaScript], lax)
+                .reads(fooJs) must beLike[JsResult[FooJavaScript]] {
+                case JsError(
+                      (
+                        JsPath,
+                        JsonValidationError(
+                          "Fails to handle 'v': BSONString != BSONJavaScript" ::
+                          Nil
+                        ) :: Nil
+                      ) :: Nil
+                    ) =>
+                  ok
               }
+            } and {
+              fromReader[FooJavaScript](fooBsonReader, lax)
+                .reads(fooJs) must_=== JsSuccess(foo)
+            } and {
+              fooJs.validate[FooJavaScript](fooBsonReader) must_=== JsSuccess(
+                foo
+              )
+            } and {
+              implicit val fooJsonReader: Reads[FooJavaScript] = {
+                import lax.javaScriptReads
+
+                Reads[FooJavaScript] { js =>
+                  for {
+                    bar <- (js \ "bar").validate[String]
+                    v <- (js \ "v").validate[BSONJavaScript]
+                  } yield FooJavaScript(bar, v)
+                }
+              }
+
+              fooJs.validate[FooJavaScript] must_=== JsSuccess(foo)
+            } and {
+              // Check implicits integration
+              implicit def br: BSONDocumentReader[FooJavaScript] = fooBsonReader
+
+              fooJs.validate[FooJavaScript] must_=== JsSuccess(foo)
+            }
           }
         }
       }
@@ -526,8 +585,14 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           { // without lax
             js.validate[BSONObjectID] must beLike[JsResult[BSONObjectID]] {
-              case JsError((JsPath, JsonValidationError(
-                "BSONString != BSONObjectID" :: Nil) :: Nil) :: Nil) =>
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "BSONString != BSONObjectID" :: Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 js.validate[String] must_=== JsSuccess(fixture.stringify)
             }
           } and {
@@ -552,8 +617,8 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           {
             // fromDocumentWriter with lax
-            fromDocumentWriter[FooObjectID](
-              fooWriter, lax).writes(foo) must_=== fooJs and {
+            fromDocumentWriter[FooObjectID](fooWriter, lax)
+              .writes(foo) must_=== fooJs and {
               // Check implicits integration
               import lax._
 
@@ -561,13 +626,15 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             } and {
               fooJs must_=== Json.obj(
                 "bar" -> "bar",
-                "v" -> JsString(fixture.stringify))
+                "v" -> JsString(fixture.stringify)
+              )
             }
           } and {
             // BSON conversion from JSON representation
-            toDocument(fooJs) must_=== BSONDocument(
+            lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
-              "v" -> BSONString(fixture.stringify))
+              "v" -> BSONString(fixture.stringify)
+            )
           } and {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooObjectID] = {
@@ -577,34 +644,46 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             }
 
             lax.objectIDReads.reads(
-              JsString(fixture.stringify)) must_=== JsSuccess(fixture) and {
-                fromReader[FooObjectID](Macros.reader[FooObjectID], lax).
-                  reads(fooJs) must beLike[JsResult[FooObjectID]] {
-                    case JsError((JsPath, JsonValidationError(
-                      "Fails to handle 'v': BSONString != BSONObjectID" ::
-                        Nil) :: Nil) :: Nil) => ok
-                  }
-              } and {
-                fromReader[FooObjectID](fooBsonReader, lax).
-                  reads(fooJs) must_=== JsSuccess(foo)
-              } and {
-                fooJs.validate[FooObjectID](
-                  fooBsonReader) must_=== JsSuccess(foo)
-
-              } and {
-                implicit val fooJsonReader: Reads[FooObjectID] = {
-                  import lax.objectIDReads
-
-                  Json.reads[FooObjectID]
-                }
-
-                fooJs.validate[FooObjectID] must_=== JsSuccess(foo)
-              } and {
-                // Check implicits integration
-                implicit def br: BSONDocumentReader[FooObjectID] = fooBsonReader
-
-                fooJs.validate[FooObjectID] must_=== JsSuccess(foo)
+              JsString(fixture.stringify)
+            ) must_=== JsSuccess(fixture) and {
+              fromReader[FooObjectID](Macros.reader[FooObjectID], lax)
+                .reads(fooJs) must beLike[JsResult[FooObjectID]] {
+                case JsError(
+                      (
+                        JsPath,
+                        JsonValidationError(
+                          "Fails to handle 'v': BSONString != BSONObjectID" ::
+                          Nil
+                        ) :: Nil
+                      ) :: Nil
+                    ) =>
+                  ok
               }
+            } and {
+              fromReader[FooObjectID](fooBsonReader, lax)
+                .reads(fooJs) must_=== JsSuccess(foo)
+            } and {
+              fooJs.validate[FooObjectID](fooBsonReader) must_=== JsSuccess(foo)
+
+            } and {
+              implicit val fooJsonReader: Reads[FooObjectID] = {
+                import lax.objectIDReads
+
+                Reads[FooObjectID] { js =>
+                  for {
+                    bar <- (js \ "bar").validate[String]
+                    v <- (js \ "v").validate[BSONObjectID]
+                  } yield FooObjectID(bar, v)
+                }
+              }
+
+              fooJs.validate[FooObjectID] must_=== JsSuccess(foo)
+            } and {
+              // Check implicits integration
+              implicit def br: BSONDocumentReader[FooObjectID] = fooBsonReader
+
+              fooJs.validate[FooObjectID] must_=== JsSuccess(foo)
+            }
           }
         }
       }
@@ -627,8 +706,14 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           { // without lax
             js.validate[BSONSymbol] must beLike[JsResult[BSONSymbol]] {
-              case JsError((JsPath, JsonValidationError(
-                "BSONString != BSONSymbol" :: Nil) :: Nil) :: Nil) =>
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "BSONString != BSONSymbol" :: Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 js.validate[String] must_=== JsSuccess(fixture.value)
             }
           } and {
@@ -653,8 +738,8 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           {
             // fromDocumentWriter with lax
-            fromDocumentWriter[FooSymbol](
-              fooWriter, lax).writes(foo) must_=== fooJs and {
+            fromDocumentWriter[FooSymbol](fooWriter, lax)
+              .writes(foo) must_=== fooJs and {
               // Check implicits integration
               import lax._
 
@@ -662,13 +747,15 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             } and {
               fooJs must_=== Json.obj(
                 "bar" -> "bar",
-                "v" -> JsString(fixture.value))
+                "v" -> JsString(fixture.value)
+              )
             }
           } and {
             // BSON conversion from JSON representation
-            toDocument(fooJs) must_=== BSONDocument(
+            lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
-              "v" -> BSONString(fixture.value))
+              "v" -> BSONString(fixture.value)
+            )
           } and {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooSymbol] = {
@@ -677,35 +764,47 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
               Macros.reader[FooSymbol]
             }
 
-            lax.symbolReads.reads(
-              JsString(fixture.value)) must_=== JsSuccess(fixture) and {
-                fromReader[FooSymbol](Macros.reader[FooSymbol], lax).
-                  reads(fooJs) must beLike[JsResult[FooSymbol]] {
-                    case JsError((JsPath, JsonValidationError(
-                      "Fails to handle 'v': BSONString != BSONSymbol" ::
-                        Nil) :: Nil) :: Nil) => ok
-                  }
-              } and {
-                fromReader[FooSymbol](fooBsonReader, lax).
-                  reads(fooJs) must_=== JsSuccess(foo)
-              } and {
-                fooJs.validate[FooSymbol](
-                  fooBsonReader) must_=== JsSuccess(foo)
-
-              } and {
-                implicit val fooJsonReader: Reads[FooSymbol] = {
-                  import lax.symbolReads
-
-                  Json.reads[FooSymbol]
-                }
-
-                fooJs.validate[FooSymbol] must_=== JsSuccess(foo)
-              } and {
-                // Check implicits integration
-                implicit def br: BSONDocumentReader[FooSymbol] = fooBsonReader
-
-                fooJs.validate[FooSymbol] must_=== JsSuccess(foo)
+            lax.symbolReads.reads(JsString(fixture.value)) must_=== JsSuccess(
+              fixture
+            ) and {
+              fromReader[FooSymbol](Macros.reader[FooSymbol], lax)
+                .reads(fooJs) must beLike[JsResult[FooSymbol]] {
+                case JsError(
+                      (
+                        JsPath,
+                        JsonValidationError(
+                          "Fails to handle 'v': BSONString != BSONSymbol" ::
+                          Nil
+                        ) :: Nil
+                      ) :: Nil
+                    ) =>
+                  ok
               }
+            } and {
+              fromReader[FooSymbol](fooBsonReader, lax)
+                .reads(fooJs) must_=== JsSuccess(foo)
+            } and {
+              fooJs.validate[FooSymbol](fooBsonReader) must_=== JsSuccess(foo)
+
+            } and {
+              implicit val fooJsonReader: Reads[FooSymbol] = {
+                import lax.symbolReads
+
+                Reads[FooSymbol] { js =>
+                  for {
+                    bar <- (js \ "bar").validate[String]
+                    v <- (js \ "v").validate[BSONSymbol]
+                  } yield FooSymbol(bar, v)
+                }
+              }
+
+              fooJs.validate[FooSymbol] must_=== JsSuccess(foo)
+            } and {
+              // Check implicits integration
+              implicit def br: BSONDocumentReader[FooSymbol] = fooBsonReader
+
+              fooJs.validate[FooSymbol] must_=== JsSuccess(foo)
+            }
           }
         }
       }
@@ -728,8 +827,14 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           { // without lax
             js.validate[BSONTimestamp] must beLike[JsResult[BSONTimestamp]] {
-              case JsError((JsPath, JsonValidationError(
-                "BSONLong != BSONTimestamp" :: Nil) :: Nil) :: Nil) =>
+              case JsError(
+                    (
+                      JsPath,
+                      JsonValidationError(
+                        "BSONLong != BSONTimestamp" :: Nil
+                      ) :: Nil
+                    ) :: Nil
+                  ) =>
                 js.validate[Long] must_=== JsSuccess(fixture.value)
             }
           } and {
@@ -754,8 +859,8 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
 
           {
             // fromDocumentWriter with lax
-            fromDocumentWriter[FooTimestamp](
-              fooWriter, lax).writes(foo) must_=== fooJs and {
+            fromDocumentWriter[FooTimestamp](fooWriter, lax)
+              .writes(foo) must_=== fooJs and {
               // Check implicits integration
               import lax._
 
@@ -763,13 +868,15 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             } and {
               fooJs must_=== Json.obj(
                 "bar" -> "bar",
-                "v" -> JsNumber(fixture.value))
+                "v" -> JsNumber(fixture.value)
+              )
             }
           } and {
             // BSON conversion from JSON representation
-            toDocument(fooJs) must_=== BSONDocument(
+            lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
-              "v" -> BSONLong(fixture.value))
+              "v" -> BSONLong(fixture.value)
+            )
           } and {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooTimestamp] = {
@@ -779,34 +886,48 @@ final class HandlerConverterSpec extends org.specs2.mutable.Specification {
             }
 
             lax.timestampReads.reads(
-              JsNumber(fixture.value)) must_=== JsSuccess(fixture) and {
-                fromReader[FooTimestamp](Macros.reader[FooTimestamp], lax).
-                  reads(fooJs) must beLike[JsResult[FooTimestamp]] {
-                    case JsError((JsPath, JsonValidationError(
-                      "Fails to handle 'v': BSONLong != BSONTimestamp" ::
-                        Nil) :: Nil) :: Nil) => ok
-                  }
-              } and {
-                fromReader[FooTimestamp](fooBsonReader, lax).
-                  reads(fooJs) must_=== JsSuccess(foo)
-              } and {
-                fooJs.validate[FooTimestamp](
-                  fooBsonReader) must_=== JsSuccess(foo)
-
-              } and {
-                implicit val fooJsonReader: Reads[FooTimestamp] = {
-                  import lax.timestampReads
-
-                  Json.reads[FooTimestamp]
-                }
-
-                fooJs.validate[FooTimestamp] must_=== JsSuccess(foo)
-              } and {
-                // Check implicits integration
-                implicit def br: BSONDocumentReader[FooTimestamp] = fooBsonReader
-
-                fooJs.validate[FooTimestamp] must_=== JsSuccess(foo)
+              JsNumber(fixture.value)
+            ) must_=== JsSuccess(fixture) and {
+              fromReader[FooTimestamp](Macros.reader[FooTimestamp], lax)
+                .reads(fooJs) must beLike[JsResult[FooTimestamp]] {
+                case JsError(
+                      (
+                        JsPath,
+                        JsonValidationError(
+                          "Fails to handle 'v': BSONLong != BSONTimestamp" ::
+                          Nil
+                        ) :: Nil
+                      ) :: Nil
+                    ) =>
+                  ok
               }
+            } and {
+              fromReader[FooTimestamp](fooBsonReader, lax)
+                .reads(fooJs) must_=== JsSuccess(foo)
+            } and {
+              fooJs.validate[FooTimestamp](fooBsonReader) must_=== JsSuccess(
+                foo
+              )
+
+            } and {
+              implicit val fooJsonReader: Reads[FooTimestamp] = {
+                import lax.timestampReads
+
+                Reads[FooTimestamp] { js =>
+                  for {
+                    bar <- (js \ "bar").validate[String]
+                    v <- (js \ "v").validate[BSONTimestamp]
+                  } yield FooTimestamp(bar, v)
+                }
+              }
+
+              fooJs.validate[FooTimestamp] must_=== JsSuccess(foo)
+            } and {
+              // Check implicits integration
+              implicit def br: BSONDocumentReader[FooTimestamp] = fooBsonReader
+
+              fooJs.validate[FooTimestamp] must_=== JsSuccess(foo)
+            }
           }
         }
       }
@@ -840,15 +961,79 @@ object HandlerFixtures {
   }
 
   import _root_.reactivemongo.play.json.compat.{ dsl, JsTrue, ValueConverters }
-  import ExtendedJsonFixtures.{ joid, jdt, jts, jsJavaScript, jre, boid, bdt, bre, bts, jsBinUuid, jsJavaScriptWS, uuid }
+  import ExtendedJsonFixtures.{
+    joid,
+    jdt,
+    jts,
+    jsJavaScript,
+    jre,
+    boid,
+    bdt,
+    bre,
+    bts,
+    jsBinUuid,
+    jsJavaScriptWS,
+    uuid
+  }
 
-  val jarr = JsArray(Seq(joid, JsString("foo"), jdt, dsl.symbol("bar"), jts, jsJavaScript("lorem()"), jre, JsArray(Seq(JsNumber(1), JsNumber(2L))), JsNumber(3.4D)))
+  val jarr = JsArray(
+    Seq(
+      joid,
+      JsString("foo"),
+      jdt,
+      dsl.symbol("bar"),
+      jts,
+      jsJavaScript("lorem()"),
+      jre,
+      JsArray(Seq(JsNumber(1), JsNumber(2L))),
+      JsNumber(3.4D)
+    )
+  )
 
-  val barr = BSONArray(boid, BSONString("foo"), bdt, BSONSymbol("bar"), bts, BSONJavaScript("lorem()"), bre, BSONArray(BSONInteger(1), BSONInteger(2 /* #note1 */ )), BSONDouble(3.4D))
+  val barr = BSONArray(
+    boid,
+    BSONString("foo"),
+    bdt,
+    BSONSymbol("bar"),
+    bts,
+    BSONJavaScript("lorem()"),
+    bre,
+    BSONArray(BSONInteger(1), BSONInteger(2 /* #note1 */ )),
+    BSONDouble(3.4D)
+  )
 
-  val jdoc = JsObject(Map[String, JsValue]("oid" -> joid, "str" -> JsString("foo"), "dt" -> jdt, "sym" -> dsl.symbol("bar"), "ts" -> jts, "nested" -> JsObject(Map[String, JsValue]("foo" -> JsString("bar"), "lorem" -> JsNumber(Long.MaxValue))), "js" -> jsJavaScript("lorem()"), "re" -> jre, "array" -> jarr, "double" -> JsNumber(3.4D)))
+  val jdoc = JsObject(
+    Map[String, JsValue](
+      "oid" -> joid,
+      "str" -> JsString("foo"),
+      "dt" -> jdt,
+      "sym" -> dsl.symbol("bar"),
+      "ts" -> jts,
+      "nested" -> JsObject(
+        Map[String, JsValue](
+          "foo" -> JsString("bar"),
+          "lorem" -> JsNumber(Long.MaxValue)
+        )
+      ),
+      "js" -> jsJavaScript("lorem()"),
+      "re" -> jre,
+      "array" -> jarr,
+      "double" -> JsNumber(3.4D)
+    )
+  )
 
-  val bdoc = BSONDocument("oid" -> boid, "str" -> BSONString("foo"), "dt" -> bdt, "sym" -> BSONSymbol("bar"), "ts" -> bts, "nested" -> BSONDocument("foo" -> "bar", "lorem" -> Long.MaxValue), "js" -> BSONJavaScript("lorem()"), "re" -> bre, "array" -> barr, "double" -> BSONDouble(3.4D))
+  val bdoc = BSONDocument(
+    "oid" -> boid,
+    "str" -> BSONString("foo"),
+    "dt" -> bdt,
+    "sym" -> BSONSymbol("bar"),
+    "ts" -> bts,
+    "nested" -> BSONDocument("foo" -> "bar", "lorem" -> Long.MaxValue),
+    "js" -> BSONJavaScript("lorem()"),
+    "re" -> bre,
+    "array" -> barr,
+    "double" -> BSONDouble(3.4D)
+  )
 
   val fixtures = Seq[(JsValue, BSONValue)](
     jsBinUuid -> BSONBinary(uuid),
@@ -871,7 +1056,8 @@ object HandlerFixtures {
     ValueConverters.JsMaxKey -> BSONMaxKey,
     ValueConverters.JsMinKey -> BSONMinKey,
     jarr -> barr,
-    jdoc -> bdoc)
+    jdoc -> bdoc
+  )
 
   case class Foo(bar: String)
   case class FooDateTime(bar: String, v: BSONDateTime)

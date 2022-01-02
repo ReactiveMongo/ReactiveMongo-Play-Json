@@ -1,12 +1,34 @@
 import sbt.Keys._
 import sbt._
 
+import com.typesafe.tools.mima.plugin.MimaKeys._
+
 object Publish {
   lazy val settings = {
     val repoName = env("PUBLISH_REPO_NAME")
     val repoUrl = env("PUBLISH_REPO_URL")
 
     Seq(
+      Compile / doc / scalacOptions ++= {
+        if (scalaBinaryVersion.value startsWith "2.") {
+          Seq(/*"-diagrams", */"-implicits", "-skip-packages", "samples")
+        } else {
+          Seq("-skip-by-id:samples")
+        }
+      },
+      Compile / doc / scalacOptions ++= Opts.doc.title(
+        "ReactiveMongo Play JSON API") ++ Opts.doc.version(Release.major.value),
+      // mimaDefaultSettings
+      mimaFailOnNoPrevious := false,
+      mimaPreviousArtifacts := {
+        val v = scalaBinaryVersion.value
+
+        if (v != "3" && v != "2.13") {
+          Set(organization.value %% moduleName.value % Common.previousVersion)
+        } else {
+          Set.empty[ModuleID]
+        }
+      },
       publishMavenStyle := true,
       Test / publishArtifact := false,
       publishTo := Some(repoUrl).map(repoName at _),

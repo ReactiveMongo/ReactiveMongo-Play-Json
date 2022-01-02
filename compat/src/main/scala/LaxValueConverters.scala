@@ -35,8 +35,9 @@ import reactivemongo.api.bson.{
 object LaxValueConverters extends LaxValueConverters
 
 private[compat] trait LaxValueConverters
-  extends FromToValue with SharedValueConverters
-  with LaxValueConvertersLowPriority1 {
+    extends FromToValue
+    with SharedValueConverters
+    with LaxValueConvertersLowPriority1 {
 
   final type JsonNumber = JsNumber
   final type JsonTime = JsNumber
@@ -73,34 +74,34 @@ private[compat] trait LaxValueConverters
 }
 
 private[json] sealed trait LaxValueConvertersLowPriority1 {
-  _: LaxValueConverters =>
+  _self: LaxValueConverters =>
 
   implicit final def fromValue(bson: BSONValue): JsValue = bson match {
-    case arr: BSONArray => fromArray(arr)
+    case arr: BSONArray  => fromArray(arr)
     case bin: BSONBinary => fromBinary(bin)
 
     case BSONBoolean(true) => JsTrue
-    case BSONBoolean(_) => JsFalse
+    case BSONBoolean(_)    => JsFalse
 
-    case dt: BSONDateTime => fromDateTime(dt)
-    case dec: BSONDecimal => fromDecimal(dec)
+    case dt: BSONDateTime  => fromDateTime(dt)
+    case dec: BSONDecimal  => fromDecimal(dec)
     case doc: BSONDocument => fromDocument(doc)(this)
-    case d: BSONDouble => fromDouble(d)
-    case i: BSONInteger => fromInteger(i)
+    case d: BSONDouble     => fromDouble(d)
+    case i: BSONInteger    => fromInteger(i)
 
-    case js: BSONJavaScript => fromJavaScript(js)
+    case js: BSONJavaScript    => fromJavaScript(js)
     case jsw: BSONJavaScriptWS => fromJavaScriptWS(jsw)
 
     case l: BSONLong => fromLong(l)
 
     case BSONMaxKey => JsMaxKey
     case BSONMinKey => JsMinKey
-    case BSONNull => JsNull
+    case BSONNull   => JsNull
 
     case oid: BSONObjectID => fromObjectID(oid)
-    case re: BSONRegex => fromRegex(re)
-    case str: BSONString => fromStr(str)
-    case sym: BSONSymbol => fromSymbol(sym)
+    case re: BSONRegex     => fromRegex(re)
+    case str: BSONString   => fromStr(str)
+    case sym: BSONSymbol   => fromSymbol(sym)
     case ts: BSONTimestamp => fromTimestamp(ts)
 
     case _ => JsUndefined
