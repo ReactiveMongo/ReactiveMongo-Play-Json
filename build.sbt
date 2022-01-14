@@ -11,7 +11,7 @@ lazy val `play-json-compat` = project
     description := "Compatibility library between BSON/Play JSON",
     mimaPreviousArtifacts := Set.empty[ModuleID], // TODO
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api" % "1.7.32" % Provided,
+      "org.slf4j" % "slf4j-api" % "1.7.33" % Provided,
       "org.reactivemongo" %% "reactivemongo-bson-api" % driverVersion.value
     ),
     libraryDependencies ++= {
