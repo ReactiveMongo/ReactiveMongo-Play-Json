@@ -14,7 +14,7 @@ object Compiler {
     crossScalaVersions := Seq(
       "2.11.12",
       scalaVersion.value,
-      "2.13.7",
+      "2.13.8",
       "3.1.3"
     ),
     ThisBuild / crossVersion := CrossVersion.binary,

@@ -46,11 +46,11 @@ object Common extends AutoPlugin {
       }
     },
     organization := "org.reactivemongo",
-    resolvers ++= Seq(
-      Resolver.sonatypeRepo("snapshots"),
-      Resolver.sonatypeRepo("staging"),
-      Resolver.typesafeRepo("releases")
-    ),
+    resolvers ++= {
+      Resolver.typesafeRepo("releases") +:
+        Resolver.sonatypeOssRepos("snapshots") ++:
+        Resolver.sonatypeOssRepos("staging")
+    },
     playVersion := {
       sys.env.get("PLAY_VERSION").getOrElse {
         if (scalaBinaryVersion.value == "2.11") playLower
