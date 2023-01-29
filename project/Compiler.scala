@@ -6,7 +6,7 @@ object Compiler {
   val playUpper = "2.9.4"
 
   private val silencerVer = Def.setting[String] {
-    "1.7.10"
+    "1.7.12"
   }
 
   lazy val settings = Seq(
@@ -14,8 +14,8 @@ object Compiler {
     crossScalaVersions := Seq(
       "2.11.12",
       scalaVersion.value,
-      "2.13.8",
-      "3.1.3"
+      "2.13.10",
+      "3.2.1"
     ),
     ThisBuild / crossVersion := CrossVersion.binary,
     Compile / unmanagedSourceDirectories += {

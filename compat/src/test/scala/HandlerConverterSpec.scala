@@ -304,43 +304,48 @@ final class HandlerConverterSpec
 
     "resolve JSON codecs for BSON values" >> {
       def spec[T: Reads: Writes] = {
-        implicitly[Reads[T]] must not(beNull) and {
+        "using Reads" in {
+          implicitly[Reads[T]] must not(beNull)
+        }
+
+        "using Writes" in {
           implicitly[Writes[T]] must not(beNull)
-        } and {
+        }
+
+        "using Format" in {
           implicitly[Format[T]] must not(beNull)
         }
       }
 
       import bson2json._
 
-      "for BSONDateTime" in spec[BSONDateTime]
+      "for BSONDateTime" >> spec[BSONDateTime]
 
-      "for BSONJavaScript" in spec[BSONJavaScript]
+      "for BSONJavaScript" >> spec[BSONJavaScript]
 
-      "for BSONObjectID" in spec[BSONObjectID]
+      "for BSONObjectID" >> spec[BSONObjectID]
 
-      "for BSONTimestamp" in spec[BSONTimestamp]
+      "for BSONTimestamp" >> spec[BSONTimestamp]
     }
 
     "convert in lax mode" >> {
       import bson2json._
 
-      "for BSONDateTime" in {
+      "for BSONDateTime" >> {
         import ExtendedJsonFixtures.{ bdt => fixture }
 
-        val js: JsValue = {
+        lazy val js: JsValue = {
           import lax._ // From-ToValue
           Json.toJson(fixture)
         }
 
-        {
-          // fromDateTime
+        "fromDateTime" in {
           lax.fromDateTime(fixture) must_== js and {
             js must_=== JsNumber(fixture.value)
           }
-        } and {
-          // toValue ...
+        }
 
+        "toValue" in {
           { // without lax
             js.validate[BSONDateTime] must beLike[JsResult[BSONDateTime]] {
               case JsError(
@@ -357,7 +362,9 @@ final class HandlerConverterSpec
             import lax._
             js.validate[BSONDateTime] must_=== JsSuccess(fixture)
           }
-        } and {
+        }
+
+        "be written" >> {
           // !! Using BSONValue in model is not recommended,
           // not to couple model with DB related types, anyway ...
 
@@ -367,13 +374,13 @@ final class HandlerConverterSpec
             Macros.writer[FooDateTime]
 
           val foo = FooDateTime("bar", fixture)
-          val fooJs: JsObject = {
+          lazy val fooJs: JsObject = {
             import lax._
 
             toJsObject(foo) // via fromDocumentWriter
           }
 
-          {
+          "to JSON" in {
             // fromDocumentWriter with lax
             fromDocumentWriter[FooDateTime](fooWriter, lax)
               .writes(foo) must_=== fooJs and {
@@ -387,14 +394,17 @@ final class HandlerConverterSpec
                 "v" -> JsNumber(fixture.value)
               )
             }
-          } and {
+          }
+
+          "to BSON document" in {
             // BSON conversion from JSON representation
             lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
               "v" -> BSONLong(fixture.value)
             )
-          } and {
-            // fromReader
+          }
+
+          "using fromReader" in {
             val fooBsonReader: BSONDocumentReader[FooDateTime] = {
               import lax.bsonDateTimeReader
 
@@ -445,20 +455,21 @@ final class HandlerConverterSpec
         }
       }
 
-      "for BSONJavaScript" in {
+      "for BSONJavaScript" >> {
         val fixture = BSONJavaScript("foo()")
 
-        val js: JsValue = {
+        lazy val js: JsValue = {
           import lax._ // From-ToValue
           Json.toJson(fixture)
         }
 
-        {
-          // fromJavaScript
+        "fromJavaScript" in {
           lax.fromJavaScript(fixture) must_== js and {
             js must_=== JsString(fixture.value)
           }
-        } and {
+        }
+
+        "toValue" in {
           // toValue ...
 
           { // without lax
@@ -477,7 +488,9 @@ final class HandlerConverterSpec
             import lax._
             js.validate[BSONJavaScript] must_=== JsSuccess(fixture)
           }
-        } and {
+        }
+
+        "be written" >> {
           // !! Using BSONValue in model is not recommended,
           // not to couple model with DB related types, anyway ...
 
@@ -487,13 +500,13 @@ final class HandlerConverterSpec
             Macros.writer[FooJavaScript]
 
           val foo = FooJavaScript("bar", fixture)
-          val fooJs: JsObject = {
+          lazy val fooJs: JsObject = {
             import lax._
 
             toJsObject(foo) // via fromDocumentWriter
           }
 
-          {
+          "to JSON" in {
             // fromDocumentWriter with lax
             fromDocumentWriter[FooJavaScript](fooWriter, lax)
               .writes(foo) must_=== fooJs and {
@@ -507,13 +520,17 @@ final class HandlerConverterSpec
                 "v" -> JsString(fixture.value)
               )
             }
-          } and {
+          }
+
+          "to BSONDocument" in {
             // BSON conversion from JSON representation
             lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
               "v" -> BSONString(fixture.value)
             )
-          } and {
+          }
+
+          "using fromReader" in {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooJavaScript] = {
               import lax.javaScriptBSONReader
@@ -567,22 +584,21 @@ final class HandlerConverterSpec
         }
       }
 
-      "for BSONObjectID" in {
+      "for BSONObjectID" >> {
         import ExtendedJsonFixtures.{ boid => fixture }
 
-        val js: JsValue = {
+        lazy val js: JsValue = {
           import lax._ // From-ToValue
           Json.toJson(fixture)
         }
 
-        {
-          // fromObjectID
+        "fromObjectID" in {
           lax.fromObjectID(fixture) must_== js and {
             js must_=== JsString(fixture.stringify)
           }
-        } and {
-          // toValue ...
+        }
 
+        "toValue" in {
           { // without lax
             js.validate[BSONObjectID] must beLike[JsResult[BSONObjectID]] {
               case JsError(
@@ -599,7 +615,9 @@ final class HandlerConverterSpec
             import lax._
             js.validate[BSONObjectID] must_=== JsSuccess(fixture)
           }
-        } and {
+        }
+
+        "be written" >> {
           // !! Using BSONValue in model is not recommended,
           // not to couple model with DB related types, anyway ...
 
@@ -609,13 +627,13 @@ final class HandlerConverterSpec
             Macros.writer[FooObjectID]
 
           val foo = FooObjectID("bar", fixture)
-          val fooJs: JsObject = {
+          lazy val fooJs: JsObject = {
             import lax._
 
             toJsObject(foo) // via fromDocumentWriter
           }
 
-          {
+          "to JSON" in {
             // fromDocumentWriter with lax
             fromDocumentWriter[FooObjectID](fooWriter, lax)
               .writes(foo) must_=== fooJs and {
@@ -629,13 +647,17 @@ final class HandlerConverterSpec
                 "v" -> JsString(fixture.stringify)
               )
             }
-          } and {
+          }
+
+          "to BSONDocument" in {
             // BSON conversion from JSON representation
             lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
               "v" -> BSONString(fixture.stringify)
             )
-          } and {
+          }
+
+          "using BSON reader" in {
             // fromReader
             val fooBsonReader: BSONDocumentReader[FooObjectID] = {
               import lax.bsonObjectIDReader
@@ -688,39 +710,39 @@ final class HandlerConverterSpec
         }
       }
 
-      "for BSONSymbol" in {
+      "for BSONSymbol" >> {
         val fixture = BSONSymbol("sym")
 
-        val js: JsValue = {
+        lazy val js: JsValue = {
           import lax._ // From-ToValue
           Json.toJson(fixture)
         }
 
-        {
-          // fromSymbol
+        "fromSymbol" in {
           lax.fromSymbol(fixture) must_== js and {
             js must_=== JsString(fixture.value)
           }
-        } and {
-          // toValue ...
+        }
 
-          { // without lax
-            js.validate[BSONSymbol] must beLike[JsResult[BSONSymbol]] {
-              case JsError(
-                    (
-                      JsPath,
-                      JsonValidationError(
-                        "BSONString != BSONSymbol" :: Nil
-                      ) :: Nil
+        "toValue" in {
+          // without lax
+          js.validate[BSONSymbol] must beLike[JsResult[BSONSymbol]] {
+            case JsError(
+                  (
+                    JsPath,
+                    JsonValidationError(
+                      "BSONString != BSONSymbol" :: Nil
                     ) :: Nil
-                  ) =>
-                js.validate[String] must_=== JsSuccess(fixture.value)
-            }
+                  ) :: Nil
+                ) =>
+              js.validate[String] must_=== JsSuccess(fixture.value)
           } and {
             import lax._
             js.validate[BSONSymbol] must_=== JsSuccess(fixture)
           }
-        } and {
+        }
+
+        "be written" >> {
           // !! Using BSONValue in model is not recommended,
           // not to couple model with DB related types, anyway ...
 
@@ -730,13 +752,13 @@ final class HandlerConverterSpec
             Macros.writer[FooSymbol]
 
           val foo = FooSymbol("bar", fixture)
-          val fooJs: JsObject = {
+          lazy val fooJs: JsObject = {
             import lax._
 
             toJsObject(foo) // via fromDocumentWriter
           }
 
-          {
+          "to JSON" in {
             // fromDocumentWriter with lax
             fromDocumentWriter[FooSymbol](fooWriter, lax)
               .writes(foo) must_=== fooJs and {
@@ -750,14 +772,17 @@ final class HandlerConverterSpec
                 "v" -> JsString(fixture.value)
               )
             }
-          } and {
+          }
+
+          "to BSONDocument" in {
             // BSON conversion from JSON representation
             lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
               "v" -> BSONString(fixture.value)
             )
-          } and {
-            // fromReader
+          }
+
+          "using fromReader" in {
             val fooBsonReader: BSONDocumentReader[FooSymbol] = {
               import lax.bsonSymbolReader
 
@@ -809,20 +834,21 @@ final class HandlerConverterSpec
         }
       }
 
-      "for BSONTimestamp" in {
+      "for BSONTimestamp" >> {
         import ExtendedJsonFixtures.{ bts => fixture }
 
-        val js: JsValue = {
+        lazy val js: JsValue = {
           import lax._ // From-ToValue
           Json.toJson(fixture)
         }
 
-        {
-          // fromTimestamp
+        "from timestamp" in {
           lax.fromTimestamp(fixture) must_== js and {
             js must_=== JsNumber(fixture.value)
           }
-        } and {
+        }
+
+        "validated as BSONTimestamp" in {
           // toValue ...
 
           { // without lax
@@ -841,7 +867,9 @@ final class HandlerConverterSpec
             import lax._
             js.validate[BSONTimestamp] must_=== JsSuccess(fixture)
           }
-        } and {
+        }
+
+        {
           // !! Using BSONValue in model is not recommended,
           // not to couple model with DB related types, anyway ...
 
@@ -857,8 +885,7 @@ final class HandlerConverterSpec
             toJsObject(foo) // via fromDocumentWriter
           }
 
-          {
-            // fromDocumentWriter with lax
+          "fromDocumentWriter with lax" in {
             fromDocumentWriter[FooTimestamp](fooWriter, lax)
               .writes(foo) must_=== fooJs and {
               // Check implicits integration
@@ -871,20 +898,23 @@ final class HandlerConverterSpec
                 "v" -> JsNumber(fixture.value)
               )
             }
-          } and {
-            // BSON conversion from JSON representation
+          }
+
+          "BSON conversion from JSON representation" in {
             lax.toDocument(fooJs) must_=== BSONDocument(
               "bar" -> "bar",
               "v" -> BSONLong(fixture.value)
             )
-          } and {
-            // fromReader
-            val fooBsonReader: BSONDocumentReader[FooTimestamp] = {
-              import lax.bsonTimestampReader
+          }
 
-              Macros.reader[FooTimestamp]
-            }
+          // fromReader
+          lazy val fooBsonReader: BSONDocumentReader[FooTimestamp] = {
+            import lax.bsonTimestampReader
 
+            Macros.reader[FooTimestamp]
+          }
+
+          "using BSON reader" in {
             lax.timestampReads.reads(
               JsNumber(fixture.value)
             ) must_=== JsSuccess(fixture) and {
@@ -901,7 +931,11 @@ final class HandlerConverterSpec
                     ) =>
                   ok
               }
-            } and {
+            }
+          }
+
+          "thus be read" in {
+            {
               fromReader[FooTimestamp](fooBsonReader, lax)
                 .reads(fooJs) must_=== JsSuccess(foo)
             } and {
