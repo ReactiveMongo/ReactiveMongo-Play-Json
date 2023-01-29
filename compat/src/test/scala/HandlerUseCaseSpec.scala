@@ -28,9 +28,15 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
     )
 
     "not be serializable on JSON without 'bson2json'" in {
-      typecheck("Json.toJson(user)") must failWith(
-        "(ambiguous implicit|No Json serializer found).*"
-      )
+      lazy val res = typecheck("Json.toJson(user)")
+
+      {
+        res must failWith(
+          "(ambiguous implicit|No Json serializer found).*"
+        )
+      } or {
+        res must failWith("Ambiguous given instances.*Writes.*")
+      }
     }
 
     "be represented in JSON using 'bson2json' conversions" >> {
@@ -54,15 +60,21 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
 
         lazy val jsn = Json.parse(expected)
 
-        s"with JSON extended syntax '${jsn}'" in {
-          val userJs = Json.toJson(user)
+        s"with JSON extended syntax '${jsn}'" >> {
+          lazy val userJs = Json.toJson(user)
 
-          userJs must_=== jsn and {
+          "thus be converted to expected JSON" in {
+            userJs must_=== jsn
+          }
+
+          "thus be validated using JSON reader" in {
             // resolved from User.bsonReader
             val jsonReader: Reads[User] = implicitly[Reads[User]]
 
             userJs.validate[User](jsonReader) must_=== JsSuccess(user)
-          } and {
+          }
+
+          "thus be written using OWrites" in {
             val jsonWriter: OWrites[User] = implicitly[OWrites[User]]
 
             Json.toJson(user)(jsonWriter) must_=== userJs
@@ -82,12 +94,16 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
 
         lazy val jsn = Json.parse(expected)
 
-        s"with lax syntax '${jsn}' provided by appropriate import" in {
+        s"with lax syntax '${jsn}' provided by appropriate import" >> {
           import lax._ // <-- required import for lax syntax
 
-          val userLaxJs = Json.toJson(user) // via fromDocumentWriter
+          lazy val userLaxJs = Json.toJson(user) // via fromDocumentWriter
 
-          userLaxJs must_=== jsn and {
+          "be converted to JSON" in {
+            userLaxJs must_=== jsn
+          }
+
+          "thus be validated from JSON" in {
             userLaxJs.validate[User] must beLike[JsResult[User]] {
               case JsError(
                     (
@@ -100,7 +116,9 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
                   ) =>
                 ok
             }
-          } and {
+          }
+
+          "thus be validated using BSON reader" in {
             // Overrides BSONReaders for OID/Timestamp/DateTime
             // so that the BSON representation matches the JSON lax one
             implicit val bsonReader: BSONDocumentReader[User] =
@@ -110,7 +128,9 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
             val jsonReader: Reads[User] = implicitly[Reads[User]]
 
             userLaxJs.validate[User](jsonReader) must_=== JsSuccess(user)
-          } and {
+          }
+
+          "thus be written to JSON using BSON writer" in {
             // Overrides BSONWriters for OID/Timestamp/DateTime
             // so that the BSON representation matches the JSON lax one
             implicit val bsonWriter: BSONDocumentWriter[User] =

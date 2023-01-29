@@ -1,5 +1,7 @@
 package reactivemongo
 
+import scala.util.Success
+
 import _root_.play.api.libs.json._
 
 import reactivemongo.api.bson.{
@@ -16,11 +18,11 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
     "be properly serialized using default Play JSON handlers" >> {
       stopOnFail
 
-      "for Lorem" in valueConversionSpec(PlayFixtures.lorem)
+      "for Lorem" >> valueConversionSpec(PlayFixtures.lorem)
 
-      "for Bar" in valueConversionSpec(PlayFixtures.bar)
+      "for Bar" >> valueConversionSpec(PlayFixtures.bar)
 
-      "for Foo" in valueConversionSpec(PlayFixtures.foo)
+      "for Foo" >> valueConversionSpec(PlayFixtures.foo)
     }
   }
 
@@ -38,15 +40,21 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
     val bsonIn: BSONValue = jsIn
     val jsOut: JsValue = bsonIn
 
-    jsIn aka BSONValue.pretty(bsonIn) must_=== jsOut and {
-      val o = Json.obj("bson" -> bsonIn) // Json.JsValueWrapper conversion
+    "be extracted" in {
+      jsIn aka BSONValue.pretty(bsonIn) must_=== jsOut and {
+        val o = Json.obj("bson" -> bsonIn) // Json.JsValueWrapper conversion
 
-      (o \ "bson").get must_=== jsOut
-    } and {
+        (o \ "bson").get must_=== jsOut
+      }
+    }
+
+    "be written to JSON" in {
       jsOut.validate[T] aka Json.stringify(jsOut) must beLike[JsResult[T]] {
         case JsSuccess(out, _) => out must_=== value
       }
-    } and {
+    }
+
+    "be written to BSON" in {
       import _root_.reactivemongo.play.json.compat.json2bson._
 
       val bsonW: BSONDocumentWriter[T] = implicitly[OWrites[T]]
@@ -54,14 +62,14 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
 
       bsonW.writeTry(value) must beSuccessfulTry[BSONValue].like {
         case written =>
-          written must_=== bsonIn and {
+          Success(written) must beSuccessfulTry(bsonIn) and {
             bsonR.readTry(written) must beSuccessfulTry(value)
           }
       } and {
         // Not implicit conversion, but implicit derived instances
         BSON.write(value) must beSuccessfulTry[BSONValue].like {
           case written =>
-            written must_=== bsonIn and {
+            Success(written) must beSuccessfulTry(bsonIn) and {
               BSON.read(written)(bsonR) must beSuccessfulTry(value)
             }
         }
