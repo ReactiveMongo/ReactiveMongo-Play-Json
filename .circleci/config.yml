@@ -80,7 +80,7 @@ commands:
                       exit 0
                     fi
 
-                    V=`sbt -Dsbt.log.noformat=true 'show version' 2>&1 | tail -n 2 | cut -d ']' -f 2 | grep SNAPSHOT | sed -e 's/[ \t]*//g'`
+                    V=`sbt -Dsbt.log.noformat=true 'show version' 2>&1 | tail -n 1 | cut -d ']' -f 2 | sed -e 's/[ \t]*//g'`
 
                     if [ `echo "$V" | grep -- '-SNAPSHOT' | wc -l` -eq 0 ]; then
                       S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
@@ -152,7 +152,7 @@ jobs:
 
   publish_snapshots:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
 
     working_directory: ~/repo
 
@@ -163,6 +163,8 @@ jobs:
       - restore_cache:
           keys:
           - *scala_cache_key
+
+      - 'export PATH="$HOME/sbt/bin:$PATH"'
 
       - publish_snapshots:
           release_suffix: play25
