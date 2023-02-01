@@ -164,7 +164,9 @@ jobs:
           keys:
           - *scala_cache_key
 
-      - 'export PATH="$HOME/sbt/bin:$PATH"'
+      - run:
+          name: Update PATH
+          command: 'export PATH="$HOME/sbt/bin:$PATH"'
 
       - publish_snapshots:
           release_suffix: play25
