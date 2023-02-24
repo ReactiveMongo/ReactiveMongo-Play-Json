@@ -74,7 +74,11 @@ sealed trait FromValue extends FromValueCompat with FromValueAPI {
   def fromDecimal(bson: BSONDecimal): JsObject
 
   /** Converts to a JSON object */
-  def fromDocument(bson: BSONDocument)(implicit conv: FromValue): JsObject
+  def fromDocument(
+      bson: BSONDocument
+    )(implicit
+      conv: FromValue
+    ): JsObject
 
   type JsonJavaScript <: JsValue
 

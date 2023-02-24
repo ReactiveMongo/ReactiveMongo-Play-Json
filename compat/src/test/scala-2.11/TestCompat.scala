@@ -14,6 +14,10 @@ object TestCompat {
     }
   }
 
-  @inline def toJsObject[T](v: T)(implicit w: OWrites[T]): JsObject =
+  @inline def toJsObject[T](
+      v: T
+    )(implicit
+      w: OWrites[T]
+    ): JsObject =
     w.writes(v)
 }
