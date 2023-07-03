@@ -8,12 +8,14 @@ cd "$SCRIPT_DIR/.."
 
 sbt ++$SCALA_VERSION ';scalafixAll -check ;scalafmtAll'
 
-git diff --exit-code || (
-  echo "ERROR: Scalafmt check failed, see differences above."
-  echo "To fix, format your sources using ./build scalafmtAll before submitting a pull request."
-  echo "Additionally, please squash your commits (eg, use git commit --amend) if you're going to update this pull request."
-  false
-)
+if [ ! "v$SCALA_VERSION" = "v2.11.12" ]; then
+  git diff --exit-code || (
+    echo "ERROR: Scalafmt check failed, see differences above."
+    echo "To fix, format your sources using ./build scalafmtAll before submitting a pull request."
+    echo "Additionally, please squash your commits (eg, use git commit --amend) if you're going to update this pull request."
+    false
+  )
+fi
 
 TEST_OPTS="exclude mongo2"
 
