@@ -6,7 +6,7 @@ SCRIPT_DIR=`dirname $0 | sed -e "s|^\./|$PWD/|"`
 
 cd "$SCRIPT_DIR/.."
 
-if [[ ! "v$SCALA_VERSION" = "v2.11*" ]]; then
+if [ ! "v$SCALA_VERSION" = "v2.11.12" ]; then
   sbt ++$SCALA_VERSION ';scalafixAll -check ;scalafmtAll'
 
   git diff --exit-code || (
