@@ -3,7 +3,7 @@ import sbt._
 
 object Compiler {
   val playLower = "2.5.0"
-  val playUpper = "2.9.4"
+  val playUpper = "2.10.3"
 
   private val silencerVer = Def.setting[String] {
     "1.7.13"
