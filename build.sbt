@@ -7,9 +7,16 @@ lazy val playJson = Def.setting {
 lazy val `play-json-compat` = project
   .in(file("compat"))
   .settings(
-    name := "reactivemongo-play-json-compat",
+  name := "reactivemongo-play-json-compat",
     description := "Compatibility library between BSON/Play JSON",
     mimaPreviousArtifacts := Set.empty[ModuleID], // TODO
+    Test / compile / scalacOptions ++= {
+      if (scalaBinaryVersion.value == "3") {
+        Seq("-Wconf:cat=deprecation&msg=.*jsObjectWrites.*:s")
+      } else {
+        Seq.empty
+      }
+    },
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.36" % Provided,
       "org.reactivemongo" %% "reactivemongo-bson-api" % driverVersion.value

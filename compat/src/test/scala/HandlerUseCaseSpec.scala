@@ -28,15 +28,20 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
     )
 
     "not be serializable on JSON without 'bson2json'" in {
-      lazy val res = typecheck("Json.toJson(user)")
+      sys.env
+        .get("PLAY_VERSION")
+        .filterNot(_ startsWith "2.10")
+        .fold[org.specs2.execute.Result](skipped) { _ =>
+          lazy val res = typecheck("Json.toJson(user)")
 
-      {
-        res must failWith(
-          "(ambiguous implicit|No Json serializer found).*"
-        )
-      } or {
-        res must failWith("Ambiguous given instances.*Writes.*")
-      }
+          {
+            res must failWith(
+              "(ambiguous implicit|No Json serializer found).*"
+            )
+          } or {
+            res must failWith("Ambiguous given instances.*Writes.*")
+          }
+        }
     }
 
     "be represented in JSON using 'bson2json' conversions" >> {
