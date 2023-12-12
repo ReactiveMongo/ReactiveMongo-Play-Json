@@ -6,7 +6,7 @@ commands:
     parameters:
       sbt_version:
         type: string
-        default: "1.8.2"
+        default: "1.9.7"
     steps:
       - restore_cache:
           keys:
@@ -193,6 +193,11 @@ jobs:
           play_version: 2.9.4
           scala_versions: 2.12.18 2.13.11 3.3.0
 
+      - publish_snapshots:
+          release_suffix: play210
+          play_version: 2.10.3
+          scala_versions: 2.12.18 2.13.11 3.3.0
+
       - save_cache:
           paths:
             - ~/.ivy2
@@ -246,9 +251,17 @@ workflows:
 
       - unit_test_suite:
           name: unit_play29
+          openjdk_version: 11
           release_suffix: play29
           play_version: 2.9.4
           scala_version: 2.13.11
+
+      - unit_test_suite:
+          name: unit_play210
+          openjdk_version: 11
+          release_suffix: play210
+          play_version: 2.10.3
+          scala_version: '3.2'
 
       - publish_snapshots:
           filters:
@@ -260,6 +273,8 @@ workflows:
             - unit_play26
             - unit_play27
             - unit_play28
+            - unit_play29
+            - unit_play210
 
       - trigger_dependent_builds:
           filters:
