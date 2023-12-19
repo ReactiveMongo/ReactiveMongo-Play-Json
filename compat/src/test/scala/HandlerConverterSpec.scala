@@ -352,7 +352,7 @@ final class HandlerConverterSpec
                     (
                       JsPath,
                       JsonValidationError(
-                        "BSONLong != BSONDateTime" :: Nil
+                        "64-bit integer (NumberLong(1574884443000)) != BSONDateTime" :: Nil
                       ) :: Nil
                     ) :: Nil
                   ) =>
@@ -420,7 +420,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': BSONLong != BSONDateTime" ::
+                          "Fails to handle 'v': 64-bit integer (NumberLong(1574884443000)) != BSONDateTime" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -478,7 +478,7 @@ final class HandlerConverterSpec
                     (
                       JsPath,
                       JsonValidationError(
-                        "BSONString != BSONJavaScript" :: Nil
+                        "String ('foo()') != BSONJavaScript" :: Nil
                       ) :: Nil
                     ) :: Nil
                   ) =>
@@ -547,7 +547,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': BSONString != BSONJavaScript" ::
+                          "Fails to handle 'v': String ('foo()') != BSONJavaScript" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -605,7 +605,7 @@ final class HandlerConverterSpec
                     (
                       JsPath,
                       JsonValidationError(
-                        "BSONString != BSONObjectID" :: Nil
+                        "String ('5dded45b0000000000000000') != BSONObjectID" :: Nil
                       ) :: Nil
                     ) :: Nil
                   ) =>
@@ -674,7 +674,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': BSONString != BSONObjectID" ::
+                          "Fails to handle 'v': String ('5dded45b0000000000000000') != BSONObjectID" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -731,7 +731,7 @@ final class HandlerConverterSpec
                   (
                     JsPath,
                     JsonValidationError(
-                      "BSONString != BSONSymbol" :: Nil
+                      "String ('sym') != BSONSymbol" :: Nil
                     ) :: Nil
                   ) :: Nil
                 ) =>
@@ -798,7 +798,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': BSONString != BSONSymbol" ::
+                          "Fails to handle 'v': String ('sym') != BSONSymbol" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -857,7 +857,7 @@ final class HandlerConverterSpec
                     (
                       JsPath,
                       JsonValidationError(
-                        "BSONLong != BSONTimestamp" :: Nil
+                        "64-bit integer (NumberLong(1574884443000)) != BSONTimestamp" :: Nil
                       ) :: Nil
                     ) :: Nil
                   ) =>
@@ -924,7 +924,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': BSONLong != BSONTimestamp" ::
+                          "Fails to handle 'v': 64-bit integer (NumberLong(1574884443000)) != BSONTimestamp" ::
                           Nil
                         ) :: Nil
                       ) :: Nil

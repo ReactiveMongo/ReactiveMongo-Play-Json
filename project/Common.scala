@@ -21,14 +21,19 @@ object Common extends AutoPlugin {
   override def projectSettings = Compiler.settings ++ Seq(
     useShaded := sys.env.get("REACTIVEMONGO_SHADED").fold(true)(_.toBoolean),
     driverVersion := {
-      val v = (ThisBuild / version).value
+      val ver = (ThisBuild / version).value
       val suffix = {
-        if (useShaded.value) "" // default ~> no suffix
+        if (useShaded.value) "" // default
         else "-noshaded"
       }
 
-      v.span(_ != '-') match {
-        case (a, b) => s"${a}${suffix}${b}"
+      if (ver endsWith "-SNAPSHOT") {
+        s"${ver stripSuffix "-SNAPSHOT"}${suffix}-SNAPSHOT"
+      } else {
+        ver.span(_ != '-') match {
+          case (a, b) => s"${a}${suffix}${b}"
+          case _      => s"${ver}${suffix}"
+        }
       }
     },
     version ~= { ver =>
