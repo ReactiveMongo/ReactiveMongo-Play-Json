@@ -1,7 +1,17 @@
 import Common.{ playVersion, driverVersion }
 
 lazy val playJson = Def.setting {
-  "com.typesafe.play" %% "play-json" % playVersion.value
+  val ver = playVersion.value
+
+  val groupId = {
+    if (ver startsWith "3.") {
+      "org.playframework"
+    } else {
+      "com.typesafe.play"
+    }
+  }
+
+  groupId %% "play-json" % ver
 }
 
 lazy val `play-json-compat` = project

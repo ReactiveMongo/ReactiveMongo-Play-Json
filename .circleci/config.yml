@@ -263,6 +263,13 @@ workflows:
           play_version: 2.10.3
           scala_version: '3.2'
 
+      - unit_test_suite:
+          name: unit_play30
+          openjdk_version: 11
+          release_suffix: play210
+          play_version: 3.0.2
+          scala_version: '3.2'
+
       - publish_snapshots:
           filters:
             branches:
@@ -275,6 +282,7 @@ workflows:
             - unit_play28
             - unit_play29
             - unit_play210
+            - unit_play30
 
       - trigger_dependent_builds:
           filters:

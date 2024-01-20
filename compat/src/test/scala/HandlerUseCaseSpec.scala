@@ -30,7 +30,7 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
     "not be serializable on JSON without 'bson2json'" in {
       sys.env
         .get("PLAY_VERSION")
-        .filterNot(_ startsWith "2.10")
+        .filterNot(v => v.startsWith("2.10") || v.startsWith("3."))
         .fold[org.specs2.execute.Result](skipped) { _ =>
           lazy val res = typecheck("Json.toJson(user)")
 
