@@ -17,7 +17,7 @@ lazy val playJson = Def.setting {
 lazy val `play-json-compat` = project
   .in(file("compat"))
   .settings(
-  name := "reactivemongo-play-json-compat",
+    name := "reactivemongo-play-json-compat",
     description := "Compatibility library between BSON/Play JSON",
     mimaPreviousArtifacts := Set.empty[ModuleID], // TODO
     Test / compile / scalacOptions ++= {
