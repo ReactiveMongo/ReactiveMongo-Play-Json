@@ -190,7 +190,7 @@ jobs:
 
       - publish_snapshots:
           release_suffix: play29
-          play_version: 2.10.4
+          play_version: 2.10.5
           scala_versions: 2.12.18 2.13.11 3.3.0
 
       - publish_snapshots:
@@ -253,7 +253,7 @@ workflows:
           name: unit_play29
           openjdk_version: 11
           release_suffix: play29
-          play_version: 2.10.4
+          play_version: 2.10.5
           scala_version: 2.13.11
 
       - unit_test_suite:
