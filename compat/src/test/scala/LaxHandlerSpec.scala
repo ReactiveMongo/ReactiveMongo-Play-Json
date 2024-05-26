@@ -4,7 +4,6 @@ import reactivemongo.play.TestUtils._
 
 import org.specs2.matcher.TypecheckMatchers._
 
-@com.github.ghik.silencer.silent(".*jsObjectWrites.*")
 final class LaxHandlerSpec extends org.specs2.mutable.Specification {
   "Lax handler".title
 
@@ -62,7 +61,8 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
           Json.toJson(user)
         }
 
-        userJs must_=== JsObject(
+        @com.github.ghik.silencer.silent
+        def expected = JsObject(
           Map[String, JsValue](
             "_id" -> Json.obj(f"$$oid" -> user._id.stringify),
             "role" -> JsString("ipsum"),
@@ -91,6 +91,8 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
             )
           )
         )
+
+        userJs must_=== expected
       }
 
       val userLaxJs: JsValue = {

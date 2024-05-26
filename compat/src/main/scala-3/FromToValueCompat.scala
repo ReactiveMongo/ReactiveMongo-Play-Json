@@ -38,6 +38,6 @@ private[compat] trait FromValueCompat { _self: FromValue =>
   implicit def fromNull(_null: BSONNull): JsNull.type = JsNull
 }
 
-private[compat] trait ToValueCompat { _self: ToValue with FromValueAPI =>
+private[compat] trait ToValueCompat { _self: ToValue & FromValueAPI =>
   implicit final def toNull(_null: JsNull.type): BSONNull = BSONNull
 }
