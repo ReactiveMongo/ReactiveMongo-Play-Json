@@ -6,16 +6,16 @@ object Compiler {
   val playUpper = "3.0.3"
 
   private val silencerVer = Def.setting[String] {
-    "1.7.13"
+    "1.7.17"
   }
 
   lazy val settings = Seq(
-    scalaVersion := "2.12.18",
+    scalaVersion := "2.12.19",
     crossScalaVersions := Seq(
       "2.11.12",
       scalaVersion.value,
-      "2.13.10",
-      "3.2.2"
+      "2.13.14",
+      "3.4.1"
     ),
     ThisBuild / crossVersion := CrossVersion.binary,
     Compile / unmanagedSourceDirectories += {
@@ -44,13 +44,25 @@ object Compiler {
       "-language:higherKinds"
     ),
     scalacOptions ++= {
-      if (scalaBinaryVersion.value startsWith "2.") {
+      if (scalaBinaryVersion.value == "2.13") {
+        Seq(
+          "-release",
+          "8",
+          "-Xlint",
+          "-g:vars"
+        )
+      } else if (scalaBinaryVersion.value startsWith "2.") {
         Seq(
           "-target:jvm-1.8",
           "-Xlint",
           "-g:vars"
         )
-      } else Seq()
+      } else {
+        Seq(
+          "-Wconf:msg=.*with\\ as\\ a\\ type\\ operator.*:s",
+          "-Wconf:msg=.*is\\ not\\ declared\\ infix.*:s"
+        )
+      }
     },
     scalacOptions ++= {
       val sv = scalaBinaryVersion.value

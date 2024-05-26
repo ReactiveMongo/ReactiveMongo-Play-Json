@@ -6,7 +6,7 @@ commands:
     parameters:
       sbt_version:
         type: string
-        default: "1.9.7"
+        default: "1.10.0"
     steps:
       - restore_cache:
           keys:
@@ -123,7 +123,7 @@ jobs:
         default: "play28"
       scala_version:
         type: string
-        default: "2.13.7"
+        default: "2.13.14"
       play_version:
         type: string
         default: "2.8.1"
@@ -176,27 +176,27 @@ jobs:
       - publish_snapshots:
           release_suffix: play26
           play_version: 2.6.7
-          scala_versions: 2.11.12 2.12.18
+          scala_versions: 2.11.12 2.12.19
 
       - publish_snapshots:
           release_suffix: play27
           play_version: 2.7.4
-          scala_versions: 2.11.12 2.12.18 2.13.11
+          scala_versions: 2.11.12 2.12.19 2.13.11
 
       - publish_snapshots:
           release_suffix: play28
           play_version: 2.8.1
-          scala_versions: 2.12.18 2.13.11 3.3.0
+          scala_versions: 2.12.19 2.13.11 3.3.0
 
       - publish_snapshots:
           release_suffix: play29
           play_version: 3.0.3
-          scala_versions: 2.12.18 2.13.11 3.3.0
+          scala_versions: 2.12.19 2.13.11 3.3.0
 
       - publish_snapshots:
           release_suffix: play210
           play_version: 2.10.3
-          scala_versions: 2.12.18 2.13.11 3.3.0
+          scala_versions: 2.12.19 2.13.11 3.3.0
 
       - save_cache:
           paths:
@@ -233,7 +233,7 @@ workflows:
           release_suffix: play26
           shaded: false
           openjdk_version: 8
-          scala_version: 2.12.18
+          scala_version: 2.12.19
           play_version: 2.6.7
 
       - unit_test_suite:
@@ -261,14 +261,14 @@ workflows:
           openjdk_version: 11
           release_suffix: play210
           play_version: 2.10.3
-          scala_version: '3.2'
+          scala_version: '3.4'
 
       - unit_test_suite:
-          name: unit_play30
+          name: unit_play3
           openjdk_version: 11
           release_suffix: play210
           play_version: 3.0.2
-          scala_version: '3.2'
+          scala_version: '3.4'
 
       - publish_snapshots:
           filters:
@@ -282,7 +282,7 @@ workflows:
             - unit_play28
             - unit_play29
             - unit_play210
-            - unit_play30
+            - unit_play3
 
       - trigger_dependent_builds:
           filters:

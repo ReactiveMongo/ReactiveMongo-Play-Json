@@ -78,7 +78,6 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
   }
 }
 
-@com.github.ghik.silencer.silent("Unused import" /* TestCompat play-2.6+ */ )
 object PlayFixtures {
   import java.util.{ Date, Locale, UUID }
   import java.time.{

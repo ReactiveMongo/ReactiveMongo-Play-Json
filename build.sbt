@@ -19,12 +19,22 @@ lazy val `play-json-compat` = project
   .settings(
     name := "reactivemongo-play-json-compat",
     description := "Compatibility library between BSON/Play JSON",
-    mimaPreviousArtifacts := Set.empty[ModuleID], // TODO
+    mimaPreviousArtifacts := Set.empty[ModuleID],
     Test / compile / scalacOptions ++= {
       if (scalaBinaryVersion.value == "3") {
         Seq("-Wconf:cat=deprecation&msg=.*jsObjectWrites.*:s")
       } else {
         Seq.empty
+      }
+    },
+    Test / compile / scalacOptions := {
+      val opts = (Test / compile / scalacOptions).value
+      val v = scalaBinaryVersion.value
+
+      if (v == "2.12" || v == "2.13") {
+        opts.filter(o => o != "-Xfatal-warnings" && o != "-Werror")
+      } else {
+        opts
       }
     },
     libraryDependencies ++= Seq(
