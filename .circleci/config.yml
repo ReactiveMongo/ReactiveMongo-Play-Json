@@ -189,13 +189,13 @@ jobs:
           scala_versions: 2.12.19 2.13.11 3.3.0
 
       - publish_snapshots:
-          release_suffix: play29
-          play_version: 3.0.4
+          release_suffix: play210
+          play_version: 2.10.3
           scala_versions: 2.12.19 2.13.11 3.3.0
 
       - publish_snapshots:
-          release_suffix: play210
-          play_version: 2.10.3
+          release_suffix: play30
+          play_version: 3.0.4
           scala_versions: 2.12.19 2.13.11 3.3.0
 
       - save_cache:
@@ -252,7 +252,7 @@ workflows:
       - unit_test_suite:
           name: unit_play29
           openjdk_version: 11
-          release_suffix: play29
+          release_suffix: play30
           play_version: 3.0.4
           scala_version: 2.13.11
 
@@ -266,7 +266,7 @@ workflows:
       - unit_test_suite:
           name: unit_play3
           openjdk_version: 11
-          release_suffix: play210
+          release_suffix: play30
           play_version: 3.0.2
           scala_version: '3.4'
 

@@ -41,17 +41,18 @@ lazy val `play-json-compat` = project
       "org.slf4j" % "slf4j-api" % "1.7.36" % Provided,
       "org.reactivemongo" %% "reactivemongo-bson-api" % driverVersion.value
     ),
-    libraryDependencies ++= {
-      if (scalaBinaryVersion.value == "3") {
-        Seq(playJson.value.cross(CrossVersion.for3Use2_13) % Provided)
-      } else {
-        Seq(playJson.value.cross(CrossVersion.binary) % Provided)
+    libraryDependencies += playJson.value.cross(CrossVersion.binary) % Provided,
+    libraryDependencies += {
+      val v = {
+        if (scalaBinaryVersion.value startsWith "3") {
+          "5.5.3"
+        } else {
+          "4.10.6"
+        }
       }
-    },
-    libraryDependencies ++= Seq(
-      ("org.specs2" %% "specs2-matcher-extra" % "4.10.6")
-        .cross(CrossVersion.for3Use2_13) % Test
-    )
+
+      "org.specs2" %% "specs2-matcher-extra" % v % Test
+    }
   )
 
 lazy val root = (project in file("."))
