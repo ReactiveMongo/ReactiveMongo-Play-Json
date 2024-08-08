@@ -55,42 +55,44 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       ) {
         case (l, n) =>
           s"from JSON $l" in {
-            implicitly[BSONValue](l) must_== n
+            implicitly[BSONValue](l) must equalTo(n)
           }
 
           s"to BSON $n" in {
-            implicitly[JsObject](n) must_=== l
+            implicitly[JsObject](n) must ===(l)
           }
       }
     }
 
     "support boolean" >> {
       "from JSON" in {
-        implicitly[BSONBoolean](JsBoolean(true)) must_=== BSONBoolean(
-          true
+        implicitly[BSONBoolean](JsBoolean(true)) must ===(
+          BSONBoolean(
+            true
+          )
         ) and {
-          implicitly[BSONBoolean](JsBoolean(false)) must_=== BSONBoolean(false)
+          implicitly[BSONBoolean](JsBoolean(false)) must ===(BSONBoolean(false))
         } and {
-          implicitly[BSONBoolean](JsTrue) must_=== BSONBoolean(true)
+          implicitly[BSONBoolean](JsTrue) must ===(BSONBoolean(true))
         } and {
-          implicitly[BSONBoolean](JsFalse) must_=== BSONBoolean(false)
+          implicitly[BSONBoolean](JsFalse) must ===(BSONBoolean(false))
         }
       }
 
       "to BSON" in {
-        implicitly[JsBoolean](BSONBoolean(true)) must_=== JsBoolean(true) and {
-          implicitly[JsBoolean](BSONBoolean(false)) must_=== JsBoolean(false)
+        implicitly[JsBoolean](BSONBoolean(true)) must ===(JsBoolean(true)) and {
+          implicitly[JsBoolean](BSONBoolean(false)) must ===(JsBoolean(false))
         }
       }
     }
 
     "support date/time" >> {
       "from JSON" in {
-        implicitly[BSONValue](jdt) must_== bdt
+        implicitly[BSONValue](jdt) must equalTo(bdt)
       }
 
       "to BSON" in {
-        implicitly[JsObject](bdt) must_=== jdt
+        implicitly[JsObject](bdt) must ===(jdt)
       }
     }
 
@@ -99,14 +101,16 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       lazy val jsZero = dsl.decimal(0)
 
       "from JSON" in {
-        implicitly[BSONValue](jsInfinity) must_=== BSONDecimal.PositiveInf and {
-          implicitly[BSONValue](jsZero) must_=== BSONDecimal.PositiveZero
+        implicitly[BSONValue](jsInfinity) must ===(
+          BSONDecimal.PositiveInf
+        ) and {
+          implicitly[BSONValue](jsZero) must ===(BSONDecimal.PositiveZero)
         }
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONDecimal.PositiveInf) must_=== jsInfinity and {
-          implicitly[JsObject](BSONDecimal.PositiveZero) must_=== jsZero
+        implicitly[JsObject](BSONDecimal.PositiveInf) must ===(jsInfinity) and {
+          implicitly[JsObject](BSONDecimal.PositiveZero) must ===(jsZero)
         }
       }
     }
@@ -115,25 +119,25 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       val raw = 1.23D
 
       "from JSON" in {
-        implicitly[BSONValue](dsl.double(raw)) must_=== BSONDouble(raw) and {
-          implicitly[BSONValue](JsNumber(raw)) must_=== BSONDouble(raw)
+        implicitly[BSONValue](dsl.double(raw)) must ===(BSONDouble(raw)) and {
+          implicitly[BSONValue](JsNumber(raw)) must ===(BSONDouble(raw))
         }
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONDouble(raw)) must_=== dsl.double(raw)
+        implicitly[JsObject](BSONDouble(raw)) must ===(dsl.double(raw))
       }
     }
 
     "support integer" >> {
       "from JSON" in {
-        implicitly[BSONValue](dsl.int(1)) must_=== BSONInteger(1) and {
-          implicitly[BSONValue](JsNumber(2)) must_=== BSONInteger(2)
+        implicitly[BSONValue](dsl.int(1)) must ===(BSONInteger(1)) and {
+          implicitly[BSONValue](JsNumber(2)) must ===(BSONInteger(2))
         }
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONInteger(2)) must_=== dsl.int(2)
+        implicitly[JsObject](BSONInteger(2)) must ===(dsl.int(2))
       }
     }
 
@@ -141,11 +145,11 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       val raw = "foo()"
 
       "from JSON" in {
-        implicitly[BSONValue](jsJavaScript(raw)) must_=== BSONJavaScript(raw)
+        implicitly[BSONValue](jsJavaScript(raw)) must ===(BSONJavaScript(raw))
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONJavaScript(raw)) must_=== jsJavaScript(raw)
+        implicitly[JsObject](BSONJavaScript(raw)) must ===(jsJavaScript(raw))
       }
     }
 
@@ -153,70 +157,74 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       val raw = "bar('lorem')"
 
       "from JSON" in {
-        implicitly[BSONValue](jsJavaScriptWS(raw)) must_=== BSONJavaScriptWS(
-          raw,
-          BSONDocument.empty
+        implicitly[BSONValue](jsJavaScriptWS(raw)) must ===(
+          BSONJavaScriptWS(
+            raw,
+            BSONDocument.empty
+          )
         )
       }
 
       "to BSON" in {
         implicitly[JsObject](
           BSONJavaScriptWS(raw, BSONDocument.empty)
-        ) must_=== jsJavaScriptWS(raw)
+        ) must ===(jsJavaScriptWS(raw))
       }
     }
 
     "support long" >> {
       "from JSON" in {
-        implicitly[BSONValue](dsl.long(1L)) must_=== BSONLong(1L) and {
-          implicitly[BSONValue](JsNumber(Long.MaxValue)) must_=== BSONLong(
-            Long.MaxValue
+        implicitly[BSONValue](dsl.long(1L)) must ===(BSONLong(1L)) and {
+          implicitly[BSONValue](JsNumber(Long.MaxValue)) must ===(
+            BSONLong(
+              Long.MaxValue
+            )
           )
         }
       }
 
       "to BSON" in {
-        implicitly[JsValue](BSONLong(2L)) must_=== dsl.long(2L)
+        implicitly[JsValue](BSONLong(2L)) must ===(dsl.long(2L))
       }
     }
 
     "support null" >> {
       "from JSON" in {
-        implicitly[BSONNull](JsNull) must_=== BSONNull
+        implicitly[BSONNull](JsNull) must ===(BSONNull)
       }
 
       "to BSON" in {
-        implicitly[JsNull.type](BSONNull) must_=== JsNull
+        implicitly[JsNull.type](BSONNull) must ===(JsNull)
       }
     }
 
     "support maxKey" >> {
       "from JSON" in {
-        implicitly[BSONValue](JsMaxKey) must_=== BSONMaxKey
+        implicitly[BSONValue](JsMaxKey) must ===(BSONMaxKey)
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONMaxKey) must_=== JsMaxKey
+        implicitly[JsObject](BSONMaxKey) must ===(JsMaxKey)
       }
     }
 
     "support minKey" >> {
       "from JSON" in {
-        implicitly[BSONValue](JsMinKey) must_=== BSONMinKey
+        implicitly[BSONValue](JsMinKey) must ===(BSONMinKey)
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONMinKey) must_=== JsMinKey
+        implicitly[JsObject](BSONMinKey) must ===(JsMinKey)
       }
     }
 
     "support object ID" >> {
       "from JSON" in {
-        implicitly[BSONValue](joid) must_=== boid
+        implicitly[BSONValue](joid) must ===(boid)
       }
 
       "to BSON" in {
-        implicitly[JsObject](boid) must_=== joid
+        implicitly[JsObject](boid) must ===(joid)
       }
     }
 
@@ -224,11 +232,11 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       val raw = "Foo"
 
       "from JSON" in {
-        implicitly[BSONValue](JsString(raw)) must_=== BSONString(raw)
+        implicitly[BSONValue](JsString(raw)) must ===(BSONString(raw))
       }
 
       "to BSON" in {
-        implicitly[JsString](BSONString(raw)) must_=== JsString(raw)
+        implicitly[JsString](BSONString(raw)) must ===(JsString(raw))
       }
     }
 
@@ -236,43 +244,43 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
       val raw = "Foo"
 
       "from JSON" in {
-        implicitly[BSONValue](dsl.symbol(raw)) must_=== BSONSymbol(raw)
+        implicitly[BSONValue](dsl.symbol(raw)) must ===(BSONSymbol(raw))
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONSymbol(raw)) must_=== dsl.symbol(raw)
+        implicitly[JsObject](BSONSymbol(raw)) must ===(dsl.symbol(raw))
       }
     }
 
     "support timestamp" >> {
       "from JSON" in {
-        toValue(jts) must_=== bts and {
-          implicitly[BSONValue](jts) must_=== bts
+        toValue(jts) must ===(bts) and {
+          implicitly[BSONValue](jts) must ===(bts)
         }
       }
 
       "to BSON" in {
-        implicitly[JsObject](bts) must_=== jts
+        implicitly[JsObject](bts) must ===(jts)
       }
     }
 
     "support regexp" >> {
       "from JSON" in {
-        implicitly[BSONValue](jre) must_=== bre
+        implicitly[BSONValue](jre) must ===(bre)
       }
 
       "to BSON" in {
-        implicitly[JsObject](bre) must_=== jre
+        implicitly[JsObject](bre) must ===(jre)
       }
     }
 
     "support undefined" >> {
       "from JSON" in {
-        implicitly[BSONValue](JsUndefined) must_=== BSONUndefined
+        implicitly[BSONValue](JsUndefined) must ===(BSONUndefined)
       }
 
       "to BSON" in {
-        implicitly[JsObject](BSONUndefined) must_=== JsUndefined
+        implicitly[JsObject](BSONUndefined) must ===(JsUndefined)
       }
     }
   }
@@ -280,21 +288,21 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
   "Non-scalar value converters" should {
     "support array" >> {
       "from JSON" in {
-        implicitly[BSONArray](jarr) must_=== barr
+        implicitly[BSONArray](jarr) must ===(barr)
       }
 
       "to BSON" in {
-        implicitly[JsArray](barr) must_=== jarr
+        implicitly[JsArray](barr) must ===(jarr)
       }
     }
 
     "support document" >> {
       "from JSON" in {
-        implicitly[BSONDocument](jdoc) must_=== bdoc
+        implicitly[BSONDocument](jdoc) must ===(bdoc)
       }
 
       "to BSON" in {
-        implicitly[JsObject](bdoc) must_=== jdoc
+        implicitly[JsObject](bdoc) must ===(jdoc)
       }
     }
   }
@@ -303,11 +311,11 @@ final class ExtendedJsonSpec extends org.specs2.mutable.Specification {
     Fragment.foreach(fixtures) {
       case (json, bson) =>
         s"from JSON $json" in {
-          implicitly[BSONValue](json) must_=== bson
+          implicitly[BSONValue](json) must ===(bson)
         }
 
         s"$bson to BSON" in {
-          implicitly[JsValue](bson) must_=== json
+          implicitly[JsValue](bson) must ===(json)
         }
     }
   }

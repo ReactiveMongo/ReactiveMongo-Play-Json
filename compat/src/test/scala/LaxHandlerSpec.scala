@@ -92,7 +92,7 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
           )
         )
 
-        userJs must_=== expected
+        userJs must ===(expected)
       }
 
       val userLaxJs: JsValue = {
@@ -103,16 +103,18 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
       }
 
       "write using lax syntax" in {
-        userLaxJs must_=== JsObject(
-          Map[String, JsValue](
-            "role" -> JsString("ipsum"),
-            "username" -> JsString("lorem"),
-            "lastModified" -> JsNumber(123456789),
-            "_id" -> JsString(user._id.stringify),
-            "sym" -> JsString("foo"),
-            "created" -> JsNumber(987654321),
-            "birth" -> Json
-              .obj("date" -> JsNumber(987654321), "place" -> JsString("bar"))
+        userLaxJs must ===(
+          JsObject(
+            Map[String, JsValue](
+              "role" -> JsString("ipsum"),
+              "username" -> JsString("lorem"),
+              "lastModified" -> JsNumber(123456789),
+              "_id" -> JsString(user._id.stringify),
+              "sym" -> JsString("foo"),
+              "created" -> JsNumber(987654321),
+              "birth" -> Json
+                .obj("date" -> JsNumber(987654321), "place" -> JsString("bar"))
+            )
           )
         )
       }
@@ -127,7 +129,7 @@ final class LaxHandlerSpec extends org.specs2.mutable.Specification {
         import bson2json._
         import lax._
 
-        userLaxJs.validate[User] must_=== JsSuccess(user)
+        userLaxJs.validate[User] must ===(JsSuccess(user))
       }
     }
   }
