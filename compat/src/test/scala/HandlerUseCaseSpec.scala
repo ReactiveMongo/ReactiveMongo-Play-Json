@@ -69,20 +69,20 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
           lazy val userJs = Json.toJson(user)
 
           "thus be converted to expected JSON" in {
-            userJs must_=== jsn
+            userJs must ===(jsn)
           }
 
           "thus be validated using JSON reader" in {
             // resolved from User.bsonReader
             val jsonReader: Reads[User] = implicitly[Reads[User]]
 
-            userJs.validate[User](jsonReader) must_=== JsSuccess(user)
+            userJs.validate[User](jsonReader) must ===(JsSuccess(user))
           }
 
           "thus be written using OWrites" in {
             val jsonWriter: OWrites[User] = implicitly[OWrites[User]]
 
-            Json.toJson(user)(jsonWriter) must_=== userJs
+            Json.toJson(user)(jsonWriter) must ===(userJs)
           }
         }
       }
@@ -105,7 +105,7 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
           lazy val userLaxJs = Json.toJson(user) // via fromDocumentWriter
 
           "be converted to JSON" in {
-            userLaxJs must_=== jsn
+            userLaxJs must ===(jsn)
           }
 
           "thus be validated from JSON" in {
@@ -132,7 +132,7 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
             // Resolved from bsonReader
             val jsonReader: Reads[User] = implicitly[Reads[User]]
 
-            userLaxJs.validate[User](jsonReader) must_=== JsSuccess(user)
+            userLaxJs.validate[User](jsonReader) must ===(JsSuccess(user))
           }
 
           "thus be written to JSON using BSON writer" in {
@@ -144,7 +144,7 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
             // Resolved from bsonWriter
             val jsonWriter: OWrites[User] = implicitly[OWrites[User]]
 
-            Json.toJson(user)(jsonWriter) must_=== userLaxJs
+            Json.toJson(user)(jsonWriter) must ===(userLaxJs)
           }
         }
       }

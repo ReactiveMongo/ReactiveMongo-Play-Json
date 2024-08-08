@@ -41,16 +41,16 @@ final class ValueConverterSpec extends org.specs2.mutable.Specification {
     val jsOut: JsValue = bsonIn
 
     "be extracted" in {
-      jsIn aka BSONValue.pretty(bsonIn) must_=== jsOut and {
+      jsIn aka BSONValue.pretty(bsonIn) must ===(jsOut) and {
         val o = Json.obj("bson" -> bsonIn) // Json.JsValueWrapper conversion
 
-        (o \ "bson").get must_=== jsOut
+        (o \ "bson").get must ===(jsOut)
       }
     }
 
     "be written to JSON" in {
       jsOut.validate[T] aka Json.stringify(jsOut) must beLike[JsResult[T]] {
-        case JsSuccess(out, _) => out must_=== value
+        case JsSuccess(out, _) => out must ===(value)
       }
     }
 
