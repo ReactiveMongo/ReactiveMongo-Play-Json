@@ -196,12 +196,12 @@ jobs:
       - publish_snapshots:
           release_suffix: play210
           play_version: 2.10.6
-          scala_versions: 2.12.19 2.13.14 3.4.2
+          scala_versions: 2.12.19 2.13.14 3.4.3
 
       - publish_snapshots:
           release_suffix: play30
           play_version: 3.0.4
-          scala_versions: 2.12.19 2.13.14 3.4.2
+          scala_versions: 2.12.19 2.13.14 3.4.3
 
       - save_cache:
           paths:
