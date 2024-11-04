@@ -6,7 +6,7 @@ object Compiler {
   val playUpper = "3.0.4"
 
   private val silencerVer = Def.setting[String] {
-    "1.7.17"
+    "1.7.19"
   }
 
   lazy val settings = Seq(
