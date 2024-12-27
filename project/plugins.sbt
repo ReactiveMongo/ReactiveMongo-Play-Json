@@ -17,7 +17,7 @@ addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.2.2")
 
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
-addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.0.1")
+addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.0")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.13.0")
 
