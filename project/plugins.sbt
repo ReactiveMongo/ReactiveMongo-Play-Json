@@ -3,7 +3,7 @@ resolvers ++= Seq(
   "Tatami Releases" at "https://raw.github.com/cchantep/tatami/master/releases"
 )
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.4")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
@@ -19,6 +19,6 @@ addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.0")
 
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.13.0")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.0")
 
 addDependencyTreePlugin
