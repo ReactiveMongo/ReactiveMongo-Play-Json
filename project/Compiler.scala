@@ -15,7 +15,7 @@ object Compiler {
       "2.11.12",
       scalaVersion.value,
       "2.13.15",
-      "3.4.2"
+      "3.6.3"
     ),
     ThisBuild / crossVersion := CrossVersion.binary,
     Compile / unmanagedSourceDirectories += {
@@ -104,7 +104,7 @@ object Compiler {
         Seq("-Wunused:all", "-language:implicitConversions")
       }
     },
-    Compile / doc / scalacOptions := (Test / scalacOptions).value,
+    Compile / doc / scalacOptions := Seq.empty, //(Test / scalacOptions).value,
     Compile / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
