@@ -104,7 +104,7 @@ object Compiler {
         Seq("-Wunused:all", "-language:implicitConversions")
       }
     },
-    Compile / doc / scalacOptions := Seq.empty, //(Test / scalacOptions).value,
+    Compile / doc / scalacOptions := Seq.empty, // (Test / scalacOptions).value,
     Compile / console / scalacOptions ~= {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
