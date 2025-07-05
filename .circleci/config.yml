@@ -200,7 +200,7 @@ jobs:
 
       - publish_snapshots:
           release_suffix: play30
-          play_version: 3.0.4
+          play_version: 3.0.5
           scala_versions: 2.12.20 2.13.16 3.6.4
 
       - save_cache:
@@ -258,7 +258,7 @@ workflows:
           name: unit_play29
           openjdk_version: 11
           release_suffix: play30
-          play_version: 3.0.4
+          play_version: 3.0.5
           scala_version: 2.13.16
 
       - unit_test_suite:
