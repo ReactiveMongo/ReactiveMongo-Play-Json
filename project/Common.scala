@@ -51,11 +51,18 @@ object Common extends AutoPlugin {
       }
     },
     organization := "org.reactivemongo",
-    resolvers ++= {
-      Resolver.typesafeRepo("releases") +:
-        Resolver.sonatypeOssRepos("snapshots") ++:
-        Resolver.sonatypeOssRepos("staging")
-    },
+    credentials ++= Seq(
+      Credentials(
+        "", // Empty realm credential - this one is actually used by Coursier!
+        "central.sonatype.com",
+        Publish.env("SONATYPE_USER"),
+        Publish.env("SONATYPE_PASS")
+      )
+    ),
+    resolvers ++= Seq(
+      "Central Testing repository" at "https://central.sonatype.com/api/v1/publisher/deployments/download",
+      Resolver.typesafeRepo("releases")
+    ),
     playVersion := {
       sys.env.get("PLAY_VERSION").getOrElse {
         if (scalaBinaryVersion.value == "2.11") playLower
