@@ -114,7 +114,7 @@ final class HandlerUseCaseSpec extends org.specs2.mutable.Specification {
                     (
                       JsPath,
                       JsonValidationError(
-                        "Fails to handle '_id': String ('5dded45b0000000000000000') != BSONObjectID" ::
+                        "Fails to handle 'HandlerUseCaseSpec.User._id': String ('5dded45b0000000000000000') != BSONObjectID" ::
                         Nil
                       ) :: Nil
                     ) :: Nil

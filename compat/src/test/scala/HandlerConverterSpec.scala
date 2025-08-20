@@ -426,7 +426,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': 64-bit integer (NumberLong(1574884443000)) != BSONDateTime" ::
+                          "Fails to handle 'reactivemongo.HandlerFixtures.FooDateTime.v': 64-bit integer (NumberLong(1574884443000)) != BSONDateTime" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -560,7 +560,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': String ('foo()') != BSONJavaScript" ::
+                          "Fails to handle 'reactivemongo.HandlerFixtures.FooJavaScript.v': String ('foo()') != BSONJavaScript" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -693,7 +693,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': String ('5dded45b0000000000000000') != BSONObjectID" ::
+                          "Fails to handle 'reactivemongo.HandlerFixtures.FooObjectID.v': String ('5dded45b0000000000000000') != BSONObjectID" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -827,7 +827,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': String ('sym') != BSONSymbol" ::
+                          "Fails to handle 'reactivemongo.HandlerFixtures.FooSymbol.v': String ('sym') != BSONSymbol" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
@@ -958,7 +958,7 @@ final class HandlerConverterSpec
                       (
                         JsPath,
                         JsonValidationError(
-                          "Fails to handle 'v': 64-bit integer (NumberLong(1574884443000)) != BSONTimestamp" ::
+                          "Fails to handle 'reactivemongo.HandlerFixtures.FooTimestamp.v': 64-bit integer (NumberLong(1574884443000)) != BSONTimestamp" ::
                           Nil
                         ) :: Nil
                       ) :: Nil
