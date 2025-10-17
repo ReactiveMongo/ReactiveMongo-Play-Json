@@ -90,8 +90,6 @@ object PlayFixtures {
   }
   import java.time.{ Duration => JDuration }
 
-  import TestCompat._
-
   case class Foo(
       int: Int,
       short: Short,
