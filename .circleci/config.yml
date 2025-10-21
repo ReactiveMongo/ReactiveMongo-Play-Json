@@ -169,13 +169,8 @@ jobs:
           command: 'export PATH="$HOME/sbt/bin:$PATH"'
 
       - publish_snapshots:
-          release_suffix: play25
-          play_version: 2.5.7
-          scala_versions: 2.11.12
-
-      - publish_snapshots:
           release_suffix: play26
-          play_version: 2.6.7
+          play_version: 2.6.14
           scala_versions: 2.11.12 2.12.20
 
       - publish_snapshots:
@@ -227,18 +222,12 @@ workflows:
     max_auto_reruns: 3
     jobs:
       - unit_test_suite:
-          name: unit_play25
-          release_suffix: play25
-          play_version: 2.5.11
-          scala_version: 2.11.12
-
-      - unit_test_suite:
           name: unit_play26
           release_suffix: play26
           shaded: false
           openjdk_version: 8
           scala_version: 2.12.20
-          play_version: 2.6.7
+          play_version: 2.6.14
 
       - unit_test_suite:
           name: unit_play27
@@ -280,7 +269,6 @@ workflows:
               only:
                 - master
           requires:
-            - unit_play25
             - unit_play26
             - unit_play27
             - unit_play28
