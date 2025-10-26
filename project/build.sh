@@ -11,10 +11,7 @@ unset REACTIVEMONGO_SHADED
 
 TASKS=";makePom ;packageBin ;packageSrc ;packageDoc"
 
-export RELEASE_SUFFIX=play25 PLAY_VERSION=2.5.7
-sbt $SBT_OPTS ++${S2_11} clean "$TASKS"
-
-export RELEASE_SUFFIX=play26 PLAY_VERSION=2.6.7
+export RELEASE_SUFFIX=play26 PLAY_VERSION=2.6.14
 sbt $SBT_OPTS ++${S2_11} "$TASKS" ++${S2_12} "$TASKS"
 
 export RELEASE_SUFFIX=play27 PLAY_VERSION=2.7.4
