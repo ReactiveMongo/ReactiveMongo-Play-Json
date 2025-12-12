@@ -171,32 +171,32 @@ jobs:
       - publish_snapshots:
           release_suffix: play26
           play_version: 2.6.14
-          scala_versions: 2.11.12 2.12.20
+          scala_versions: 2.11.12 2.12.21
 
       - publish_snapshots:
           release_suffix: play27
           play_version: 2.7.4
-          scala_versions: 2.11.12 2.12.20 2.13.17
+          scala_versions: 2.11.12 2.12.21 2.13.17
 
       - publish_snapshots:
           release_suffix: play28
           play_version: 2.8.1
-          scala_versions: 2.12.20 2.13.17
+          scala_versions: 2.12.21 2.13.17
 
       - publish_snapshots:
           release_suffix: play29
           play_version: 2.9.1
-          scala_versions: 2.12.20 2.13.17
+          scala_versions: 2.12.21 2.13.17
 
       - publish_snapshots:
           release_suffix: play210
           play_version: 2.10.6
-          scala_versions: 2.12.20 2.13.17 3.3
+          scala_versions: 2.12.21 2.13.17 3.3
 
       - publish_snapshots:
           release_suffix: play30
           play_version: 3.0.6
-          scala_versions: 2.12.20 2.13.17 3.3
+          scala_versions: 2.12.21 2.13.17 3.3
 
       - save_cache:
           paths:
@@ -226,7 +226,7 @@ workflows:
           release_suffix: play26
           shaded: false
           openjdk_version: 8
-          scala_version: 2.12.20
+          scala_version: 2.12.21
           play_version: 2.6.14
 
       - unit_test_suite:
