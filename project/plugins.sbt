@@ -13,7 +13,7 @@ addSbtPlugin("cchantep" % "sbt-hl-compiler" % "0.8")
 
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.4")
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.4.2")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.4.3")
 
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
