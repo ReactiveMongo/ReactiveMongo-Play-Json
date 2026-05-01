@@ -9,7 +9,7 @@ object Compiler {
     "1.7.19"
   }
 
-  val scala3Lts = "3.4.3"
+  val scala3Lts = "3.8.3"
 
   lazy val settings = Seq(
     scalaVersion := "2.12.20",
@@ -42,12 +42,12 @@ object Compiler {
       "-unchecked",
       "-deprecation",
       "-feature",
-      "-Xfatal-warnings",
       "-language:higherKinds"
     ),
     scalacOptions ++= {
       if (scalaBinaryVersion.value == "2.13") {
         Seq(
+          "-Xfatal-warnings",
           "-release",
           "8",
           "-Xlint",
@@ -55,14 +55,17 @@ object Compiler {
         )
       } else if (scalaBinaryVersion.value startsWith "2.") {
         Seq(
+          "-Xfatal-warnings",
           "-target:jvm-1.8",
           "-Xlint",
           "-g:vars"
         )
       } else {
         Seq(
+          "-Werror",
           "-Wconf:msg=.*with\\ as\\ a\\ type\\ operator.*:s",
-          "-Wconf:msg=.*is\\ not\\ declared\\ infix.*:s"
+          "-Wconf:msg=.*is\\ not\\ declared\\ infix.*:s",
+          "-Wconf:msg=Implicit\\ parameters\\ .*provided\\ .*using.*\\ clause:s"
         )
       }
     },
