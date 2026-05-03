@@ -46,8 +46,10 @@ lazy val `play-json-compat` = project
       val ver = {
         if (scalaBinaryVersion.value startsWith "3") {
           "5.5.3"
-        } else {
+        } else if (scalaBinaryVersion.value == "2.11") {
           "4.10.6"
+        } else {
+          "4.20.9"
         }
       }
 
