@@ -117,17 +117,25 @@ object Compiler {
       _.filterNot { opt => opt.startsWith("-X") || opt.startsWith("-Y") }
     },
     libraryDependencies ++= {
+      val silencerLib = {
+        if (scalaBinaryVersion.value == "3") {
+          "com.github.ghik" % "silencer-lib_2.13.16" % silencerVer.value % Provided
+        } else {
+          ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided)
+            .cross(CrossVersion.full)
+        }
+      }
+
       if (scalaBinaryVersion.value != "3") {
         Seq(
           compilerPlugin(
             ("com.github.ghik" %% "silencer-plugin" % silencerVer.value)
               .cross(CrossVersion.full)
           ),
-          ("com.github.ghik" %% "silencer-lib" % silencerVer.value % Provided)
-            .cross(CrossVersion.full)
+          silencerLib
         )
       } else {
-        Seq.empty
+        Seq(silencerLib)
       }
     }
   )
