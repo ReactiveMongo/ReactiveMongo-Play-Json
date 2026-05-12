@@ -152,7 +152,7 @@ jobs:
 
   publish_snapshots:
     docker:
-      - image: cimg/openjdk:8.0
+      - image: cimg/openjdk:17.0
 
     working_directory: ~/repo
 
