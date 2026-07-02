@@ -85,7 +85,7 @@ commands:
                     if [ `echo "$V" | grep -cE 'SNAPSHOT$'` -eq 0 ]; then
                       S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
                       echo "Cannot bump $V to $S"
-                      echo "version in ThisBuild := \"$S\"" > version.sbt
+                      echo "ThisBuild / version := \"$S\"" > version.sbt
                     fi
 
                     export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
