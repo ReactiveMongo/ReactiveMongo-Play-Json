@@ -80,7 +80,22 @@ commands:
                       exit 0
                     fi
 
-                    V=`sbt 'show version' 2>&1 | sed 's/\x1b\[0[Jm]//g' | grep '[0-9]\+\.[0-9]\+' | tail -1 | sed 's/\[info\]//' | xargs | tr -cd '[:alnum:]._-'`
+                    if [ "x$PUBLISH_USER" = "x" -o "x$PUBLISH_PASS" = "x" ]; then
+                      echo "Missing publication credentials"
+                      exit 1
+                    fi
+
+                    # Make sure to export variables before the first call to `sbt`
+                    # so that the variable are defined in the SBT server;
+                    # Otherwise `sbt` will then run a client connected to a server
+                    # where the variables defined meanwhile are not available.
+                    export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
+                    export PUBLISH_REPO_ID="central.sonatype.com"
+                    export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"                    
+                    export RELEASE_SUFFIX="<< parameters.release_suffix >>"
+                    export PLAY_VERSION="<< parameters.play_version >>"
+
+                    V=`sbt 'show version' 2>&1 | sed 's/\x1b\[0[Jm]//g' | grep --color=never '[0-9]\+\.[0-9]\+' | tail -1 | sed 's/\[info\]//' | xargs | tr -cd '[:alnum:]._-'`
 
                     if [ `echo "$V" | grep -cE 'SNAPSHOT$'` -eq 0 ]; then
                       S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
@@ -88,20 +103,7 @@ commands:
                       echo "ThisBuild / version := \"$S\"" > version.sbt
                     fi
 
-                    export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
-                    export PUBLISH_REPO_ID="central.sonatype.com"
-                    export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"
-                    
-                    if [ "x$PUBLISH_USER" = "x" -o "x$PUBLISH_PASS" = "x" ]; then
-                      echo "Missing publication credentials"
-                      exit 1
-                    fi
-                    
-                    export RELEASE_SUFFIX="<< parameters.release_suffix >>"
-                    export PLAY_VERSION="<< parameters.play_version >>"
-                    
                     echo "Publishing artifacts $RELEASE_SUFFIX for $PLAY_VERSION"
-                    env | grep PUBLISH_REPO
                     
                     if [ "x<< parameters.scala_versions >>" = "x" ]; then
                       sbt +publish
