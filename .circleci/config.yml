@@ -72,7 +72,7 @@ commands:
         type: string
         default: ""
     steps:
-      - deploy:
+      - run:
           name: Publish artifacts to Sonatype Snapshots
           command: |
                     if [ ! "${CIRCLE_BRANCH}" = "master" ]; then
@@ -80,7 +80,7 @@ commands:
                       exit 0
                     fi
 
-                    V=`sbt -J-Dsbt.log.noformat=true 'show version' 2>&1 | tail -n 1 | cut -d ']' -f 2 | sed -e 's/[ \t]*//g'`
+                    V=`sbt -J-Dsbt.log.noformat=true 'show version' 2>&1 | grep -A1 version | tail -n 1 | cut -d ']' -f 2 | sed -e 's/[ \t]*//g'`
 
                     if [ `echo "$V" | grep -cE 'SNAPSHOT$'` -eq 0 ]; then
                       S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
