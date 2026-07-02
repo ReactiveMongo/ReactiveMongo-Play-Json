@@ -85,18 +85,13 @@ commands:
                       exit 1
                     fi
 
-                    # Make sure to export variables before the first call to `sbt`
-                    # so that the variable are defined in the SBT server;
-                    # Otherwise `sbt` will then run a client connected to a server
-                    # where the variables defined meanwhile are not available.
                     export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
                     export PUBLISH_REPO_ID="central.sonatype.com"
                     export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"                    
                     export RELEASE_SUFFIX="<< parameters.release_suffix >>"
                     export PLAY_VERSION="<< parameters.play_version >>"
 
-                    sbt 'show version'
-                    V=`sbt 'show version' 2>&1 | sed 's/\x1b\[0[Jm]//g' | grep --color=never '[0-9]\+\.[0-9]\+' | tail -1 | sed 's/\[info\]//' | xargs | tr -cd '[:alnum:]._-'`
+                    V=$(sbt --server 'show version' 2>&1 | sed 's/\x1b\[0[Jm]//g' | grep --color=never '[0-9]\+\.[0-9]\+' | tail -1 | sed 's/\[info\]//' | xargs | tr -cd '[:alnum:]._-')
 
                     if [ `echo "$V" | grep -cE 'SNAPSHOT$'` -eq 0 ]; then
                       S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
@@ -107,10 +102,10 @@ commands:
                     echo "Publishing artifacts $RELEASE_SUFFIX for $PLAY_VERSION"
                     
                     if [ "x<< parameters.scala_versions >>" = "x" ]; then
-                      sbt +publish
+                      sbt --server +publish
                     else
-                      for V in `echo "<< parameters.scala_versions >>"`; do
-                        sbt ++$V publish
+                      for SCALA_V in << parameters.scala_versions >>; do
+                        sbt --server ++$SCALA_V publish
                       done
                     fi
 
