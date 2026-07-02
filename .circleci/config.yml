@@ -60,7 +60,7 @@ commands:
           when: always
 
   publish_snapshots:
-    description: 'Publish << parameters.release_suffix >> artifacts to Snapshots repository (play << parameters.play_version >>)'
+    description: Publish artifacts to Sonatype Snapshots
     parameters:
       release_suffix:
         type: string
@@ -73,7 +73,7 @@ commands:
         default: ""
     steps:
       - run:
-          name: Publish artifacts to Sonatype Snapshots
+          name: 'Publish << parameters.release_suffix >> artifacts to Snapshots repository (play << parameters.play_version >>)'
           command: |
                     if [ ! "${CIRCLE_BRANCH}" = "master" ]; then
                       echo "Skipped on branch ${CIRCLE_BRANCH}"
