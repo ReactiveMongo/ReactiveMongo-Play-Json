@@ -60,7 +60,7 @@ commands:
           when: always
 
   publish_snapshots:
-    description: Publish artifacts to Snapshots repository
+    description: 'Publish << parameters.release_suffix >> artifacts to Snapshots repository (play << parameters.play_version >>)'
     parameters:
       release_suffix:
         type: string
@@ -101,6 +101,7 @@ commands:
                     export PLAY_VERSION="<< parameters.play_version >>"
                     
                     echo "Publishing artifacts $RELEASE_SUFFIX for $PLAY_VERSION"
+                    env | grep PUBLISH_REPO
                     
                     if [ "x<< parameters.scala_versions >>" = "x" ]; then
                       sbt +publish
