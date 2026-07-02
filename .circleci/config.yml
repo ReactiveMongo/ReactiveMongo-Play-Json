@@ -93,10 +93,9 @@ commands:
 
                     V=$(sbt --server 'show version' 2>&1 | sed 's/\x1b\[0[Jm]//g' | grep --color=never '[0-9]\+\.[0-9]\+' | tail -1 | sed 's/\[info\]//' | xargs | tr -cd '[:alnum:]._-')
 
-                    if [ `echo "$V" | grep -cE 'SNAPSHOT$'` -eq 0 ]; then
-                      S=`echo "$V" | perl -pe 's/([0-9]+)$/${\($1 + 1)}-SNAPSHOT/'`
-                      echo "Cannot bump $V to $S"
-                      echo "ThisBuild / version := \"$S\"" > version.sbt
+                    if [[ "$V" != *SNAPSHOT* ]]; then
+                      echo "Skip non snapshot: $V"
+                      exit 0
                     fi
 
                     echo "Publishing artifacts $RELEASE_SUFFIX for $PLAY_VERSION"
