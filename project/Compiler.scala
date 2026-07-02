@@ -53,7 +53,7 @@ object Compiler {
           "-Xlint",
           "-g:vars"
         )
-      } else if (scalaBinaryVersion.value startsWith "2.") {
+      } else if (scalaBinaryVersion.value.startsWith("2.")) {
         Seq(
           "-Xfatal-warnings",
           "-target:jvm-1.8",

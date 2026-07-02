@@ -7,9 +7,12 @@ object Testing {
     Test / fork := false,
     Test / testOptions += Tests.Cleanup(cl => {
       import scala.language.reflectiveCalls
+
       val c = cl.loadClass("Common$")
       type M = { def close(): Unit }
+
       val m: M = c.getField("MODULE$").get(null).asInstanceOf[M]
+
       m.close()
     }),
     libraryDependencies ++= Seq(

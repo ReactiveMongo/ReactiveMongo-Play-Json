@@ -4,7 +4,7 @@ lazy val playJson = Def.setting {
   val ver = playVersion.value
 
   val groupId = {
-    if (ver startsWith "3.") {
+    if (ver.startsWith("3.")) {
       "org.playframework"
     } else {
       "com.typesafe.play"
@@ -44,7 +44,7 @@ lazy val `play-json-compat` = project
     libraryDependencies += playJson.value.cross(CrossVersion.binary) % Provided,
     libraryDependencies += {
       val ver = {
-        if (scalaBinaryVersion.value startsWith "3") {
+        if (scalaBinaryVersion.value.startsWith("3")) {
           "5.5.3"
         } else if (scalaBinaryVersion.value == "2.11") {
           "4.10.6"
@@ -58,7 +58,7 @@ lazy val `play-json-compat` = project
   )
 
 // TODO: Re-root
-lazy val root = (project in file("."))
+lazy val root = project.in(file("."))
   .settings(
     Release.settings ++ Seq(
       publish := ({}),
