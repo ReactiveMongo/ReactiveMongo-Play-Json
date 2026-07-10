@@ -58,7 +58,8 @@ lazy val `play-json-compat` = project
   )
 
 // TODO: Re-root
-lazy val root = project.in(file("."))
+lazy val root = project
+  .in(file("."))
   .settings(
     Release.settings ++ Seq(
       publish := ({}),
