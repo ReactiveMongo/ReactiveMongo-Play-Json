@@ -189,12 +189,12 @@ jobs:
       - publish_snapshots:
           release_suffix: play210
           play_version: 2.10.6
-          scala_versions: 2.12 2.13 3.8
+          scala_versions: 2.12 2.13 3.4
 
       - publish_snapshots:
           release_suffix: play30
           play_version: 3.0.6
-          scala_versions: 2.12 2.13 3.8
+          scala_versions: 2.12 2.13 3.4
 
       - save_cache:
           paths:
@@ -250,14 +250,14 @@ workflows:
           openjdk_version: "17.0"
           release_suffix: play210
           play_version: 2.10.6
-          scala_version: '3.8'
+          scala_version: '3.4'
 
       - unit_test_suite:
           name: unit_play3
           openjdk_version: "17.0"
           release_suffix: play30
           play_version: 3.0.2
-          scala_version: '3.8'
+          scala_version: '3.4'
 
       - publish_snapshots:
           filters:
