@@ -87,7 +87,7 @@ commands:
 
                     export PUBLISH_REPO_NAME="Sonatype Nexus Repository Manager"
                     export PUBLISH_REPO_ID="central.sonatype.com"
-                    export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"                    
+                    export PUBLISH_REPO_URL="https://central.sonatype.com/repository/maven-snapshots/"
                     export RELEASE_SUFFIX="<< parameters.release_suffix >>"
                     export PLAY_VERSION="<< parameters.play_version >>"
 

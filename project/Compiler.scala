@@ -9,7 +9,7 @@ object Compiler {
     "1.7.19"
   }
 
-  val scala3Lts = "3.8.4"
+  val scala3Lts = "3.4.3"
 
   lazy val settings = Seq(
     scalaVersion := "2.12.20",
