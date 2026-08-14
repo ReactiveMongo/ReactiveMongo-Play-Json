@@ -250,7 +250,7 @@ workflows:
           openjdk_version: "17.0"
           release_suffix: play210
           play_version: 2.10.6
-          scala_version: '3.4'
+          scala_version: '3.3'
 
       - unit_test_suite:
           name: unit_play3
