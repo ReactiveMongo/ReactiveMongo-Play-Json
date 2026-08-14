@@ -52,12 +52,12 @@ object Common extends AutoPlugin {
       }
     },
     organization := "org.reactivemongo",
-    credentials ++= sys.env.get("SONATYPE_USER").toSeq.map { user =>
+    credentials ++= sys.env.get("SONATYPE_USERNAME").toSeq.map { user =>
       Credentials(
         "", // Empty realm credential - this one is actually used by Coursier!
         "central.sonatype.com",
         user,
-        Publish.env("SONATYPE_PASS")
+        Publish.env("SONATYPE_PASSWORD")
       )
     },
     resolvers ++= Seq(

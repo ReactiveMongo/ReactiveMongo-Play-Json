@@ -42,7 +42,7 @@ object Publish {
       ),
       pomIncludeRepository := { _ => false },
       licenses := Seq(License.Apache2),
-      homepage := Some(url("http://reactivemongo.org")),
+      homepage := Some(uri("http://reactivemongo.org")),
       autoAPIMappings := true,
       pomExtra := (<scm>
           <url>git://github.com/ReactiveMongo/ReactiveMongo-Play-Json.git</url>
