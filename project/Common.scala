@@ -84,6 +84,12 @@ object Common extends AutoPlugin {
     },
     Test / unmanagedSourceDirectories ++= playDirs.value.map { dir =>
       (Test / sourceDirectory).value / dir
+    },
+    target := {
+      val suffix = playVersion.value.reverse.
+        dropWhile(_ != '.').stripPrefix(".").reverse.filter(_ != '.')
+
+      target.value / s"play$suffix"
     }
   ) ++ Publish.settings
 }
